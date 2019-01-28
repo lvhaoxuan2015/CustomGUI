@@ -1,0 +1,5 @@
+name: CustomGUI
+main: custom.gui.CustomGUI
+version: 1.0
+commands:
+    opengui:
