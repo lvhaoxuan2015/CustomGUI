@@ -85,6 +85,7 @@ public final class JsonStreamParser implements Iterator<JsonElement> {
 	 *             if the incoming stream is malformed JSON.
 	 * @since 1.4
 	 */
+	@Override
 	public JsonElement next() throws JsonParseException {
 		if (!hasNext()) {
 			throw new NoSuchElementException();
@@ -109,6 +110,7 @@ public final class JsonStreamParser implements Iterator<JsonElement> {
 	 *         otherwise
 	 * @since 1.4
 	 */
+	@Override
 	public boolean hasNext() {
 		synchronized (lock) {
 			try {
@@ -127,6 +129,7 @@ public final class JsonStreamParser implements Iterator<JsonElement> {
 	 * 
 	 * @since 1.4
 	 */
+	@Override
 	public void remove() {
 		throw new UnsupportedOperationException();
 	}

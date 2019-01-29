@@ -109,6 +109,7 @@ public final class Excluder implements TypeAdapterFactory, Cloneable {
 		return result;
 	}
 
+	@Override
 	public <T> TypeAdapter<T> create(final Gson gson, final TypeToken<T> type) {
 		Class<?> rawType = type.getRawType();
 		boolean excludeClass = excludeClassChecks(rawType);

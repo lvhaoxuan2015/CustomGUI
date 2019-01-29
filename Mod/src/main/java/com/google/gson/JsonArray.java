@@ -198,6 +198,7 @@ public final class JsonArray extends JsonElement implements Iterable<JsonElement
 	 *
 	 * @return an iterator to navigate the elements of the array.
 	 */
+	@Override
 	public Iterator<JsonElement> iterator() {
 		return elements.iterator();
 	}

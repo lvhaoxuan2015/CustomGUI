@@ -5,20 +5,12 @@ import com.google.gson.GsonBuilder;
 
 import custom.gui.gui.Gui;
 import custom.gui.gui.GuiUtil;
-import custom.gui.networkgui.NetWorkGuiButton;
 import custom.gui.networkgui.NetWorkGuiString;
 
-public class EGuiString implements EGuiObject {
+public class EGuiString extends EGuiObject {
 
 	String str;
-	int x, y, color;
-
-	public EGuiString(String str, int x, int y, int color) {
-		this.str = str;
-		this.x = x;
-		this.y = y;
-		this.color = color;
-	}
+	int x, y, color, id;
 
 	public EGuiString(String json) {
 		Gson gson = new GsonBuilder().create();

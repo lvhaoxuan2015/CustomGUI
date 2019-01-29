@@ -3,9 +3,10 @@ package custom.gui.networkgui;
 public class NetWorkGuiImage extends NetWorkGuiObject {
 
 	public String path;
-	public int x, y, textureX, textureY, width, height;
+	public int x, y, textureX, textureY, width, height, id;
 
-	public NetWorkGuiImage(String path, int x, int y, int textureX, int textureY, int width, int height) {
+	public NetWorkGuiImage(String path, int id, int x, int y, int textureX, int textureY, int width, int height) {
+		this.id = id;
 		this.path = path;
 		this.x = x;
 		this.y = y;

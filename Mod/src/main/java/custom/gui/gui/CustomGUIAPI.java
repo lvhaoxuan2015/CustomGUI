@@ -1,7 +1,5 @@
 package custom.gui.gui;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import custom.gui.gui.object.EGuiObject;

@@ -854,7 +854,7 @@ public final class TypeAdapters {
 			if (!rawType.isEnum()) {
 				rawType = rawType.getSuperclass(); // handle anonymous subclasses
 			}
-			return (TypeAdapter<T>) new EnumTypeAdapter(rawType);
+			return new EnumTypeAdapter(rawType);
 		}
 	};
 

@@ -1,8 +1,7 @@
 package custom.gui.networkgui;
 
 public class NetWorkGuiField extends NetWorkGuiObject {
-	public int id;
-	public int x, y, width, height;
+	public int x, y, width, height, id;
 
 	public NetWorkGuiField(int id, int x, int y, int width, int height) {
 		this.id = id;

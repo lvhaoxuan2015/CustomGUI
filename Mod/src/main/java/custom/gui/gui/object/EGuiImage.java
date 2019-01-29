@@ -1,44 +1,32 @@
 package custom.gui.gui.object;
 
-import java.lang.reflect.Field;
-import java.util.Map.Entry;
-
+import org.lwjgl.opengl.GL11;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-
-import custom.gui.CustomGUI;
 import custom.gui.gui.Gui;
 import custom.gui.gui.GuiUtil;
-import custom.gui.networkgui.NetWorkGuiButton;
 import custom.gui.networkgui.NetWorkGuiImage;
-import custom.gui.networkgui.NetWorkGuiObject;
-import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.client.renderer.texture.TextureUtil;
 
-public class EGuiImage implements EGuiObject {
-	ResourceLocation r;
+public class EGuiImage extends EGuiObject {
 	String path;
-	int x, y, textureX, textureY, width, height;
-
-	public EGuiImage(ResourceLocation r) {
-		this.r = r;
-	}
+	int x, y, textureX, textureY, width, height, id;
 
 	public EGuiImage(String json) {
 		Gson gson = new GsonBuilder().create();
 		NetWorkGuiImage in = gson.fromJson(json, NetWorkGuiImage.class);
 		GuiUtil.writeInObject(this, in);
-		this.r = new ResourceLocation(CustomGUI.MODID, path);
 	}
 
 	@Override
 	public void draw(Gui gui) {
-		gui.mc.getTextureManager().bindTexture(r);
+		int textureID = TextureUtil.glGenTextures();
+		TextureUtil.uploadTextureImage(textureID, TextureManager.getBufferedImage(path));
+		GL11.glBindTexture(GL11.GL_TEXTURE_2D, textureID);
 		GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-		gui.drawModalRectWithCustomSizedTexture(x, y, 0, 0, width, height, width, height);
+		net.minecraft.client.gui.Gui.drawModalRectWithCustomSizedTexture(x, y, 0, 0, width / 2, height / 2, width / 2,
+				height / 2);
 	}
 
 	@Override
