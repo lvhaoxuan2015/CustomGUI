@@ -36,6 +36,16 @@ final class TypeAdapterRuntimeTypeWrapper<T> extends TypeAdapter<T> {
 		this.type = type;
 	}
 
+	/**
+	 * Finds a compatible runtime type if it is more specific
+	 */
+	private Type getRuntimeTypeIfMoreSpecific(Type type, Object value) {
+		if (value != null && (type == Object.class || type instanceof TypeVariable<?> || type instanceof Class<?>)) {
+			type = value.getClass();
+		}
+		return type;
+	}
+
 	@Override
 	public T read(JsonReader in) throws IOException {
 		return delegate.read(in);
@@ -68,15 +78,5 @@ final class TypeAdapterRuntimeTypeWrapper<T> extends TypeAdapter<T> {
 			}
 		}
 		chosen.write(out, value);
-	}
-
-	/**
-	 * Finds a compatible runtime type if it is more specific
-	 */
-	private Type getRuntimeTypeIfMoreSpecific(Type type, Object value) {
-		if (value != null && (type == Object.class || type instanceof TypeVariable<?> || type instanceof Class<?>)) {
-			type = value.getClass();
-		}
-		return type;
 	}
 }

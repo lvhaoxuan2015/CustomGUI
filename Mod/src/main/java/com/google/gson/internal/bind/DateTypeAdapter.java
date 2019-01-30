@@ -16,6 +16,15 @@
 
 package com.google.gson.internal.bind;
 
+import java.io.IOException;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.ParsePosition;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.TypeAdapter;
@@ -27,15 +36,6 @@ import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
-
-import java.io.IOException;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.ParsePosition;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
 
 /**
  * Adapter for Date. Although this class appears stateless, it is not.
@@ -68,15 +68,6 @@ public final class DateTypeAdapter extends TypeAdapter<Date> {
 		}
 	}
 
-	@Override
-	public Date read(JsonReader in) throws IOException {
-		if (in.peek() == JsonToken.NULL) {
-			in.nextNull();
-			return null;
-		}
-		return deserializeToDate(in.nextString());
-	}
-
 	private synchronized Date deserializeToDate(String json) {
 		for (DateFormat dateFormat : dateFormats) {
 			try {
@@ -89,6 +80,15 @@ public final class DateTypeAdapter extends TypeAdapter<Date> {
 		} catch (ParseException e) {
 			throw new JsonSyntaxException(json, e);
 		}
+	}
+
+	@Override
+	public Date read(JsonReader in) throws IOException {
+		if (in.peek() == JsonToken.NULL) {
+			in.nextNull();
+			return null;
+		}
+		return deserializeToDate(in.nextString());
 	}
 
 	@Override

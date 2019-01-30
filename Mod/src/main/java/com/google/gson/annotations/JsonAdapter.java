@@ -16,14 +16,15 @@
 
 package com.google.gson.annotations;
 
-import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonSerializer;
-import com.google.gson.TypeAdapter;
-import com.google.gson.TypeAdapterFactory;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonSerializer;
+import com.google.gson.TypeAdapter;
+import com.google.gson.TypeAdapterFactory;
 
 /**
  * An annotation that indicates the Gson {@link TypeAdapter} to use with a class
@@ -103,15 +104,15 @@ import java.lang.annotation.Target;
 public @interface JsonAdapter {
 
 	/**
-	 * Either a {@link TypeAdapter} or {@link TypeAdapterFactory}, or one or both of
-	 * {@link JsonDeserializer} or {@link JsonSerializer}.
-	 */
-	Class<?> value();
-
-	/**
 	 * false, to be able to handle {@code null} values within the adapter, default
 	 * value is true.
 	 */
 	boolean nullSafe() default true;
+
+	/**
+	 * Either a {@link TypeAdapter} or {@link TypeAdapterFactory}, or one or both of
+	 * {@link JsonDeserializer} or {@link JsonSerializer}.
+	 */
+	Class<?> value();
 
 }

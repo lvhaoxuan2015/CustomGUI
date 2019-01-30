@@ -32,7 +32,28 @@ import com.google.gson.JsonIOException;
 final class UnsafeReflectionAccessor extends ReflectionAccessor {
 
 	private static Class unsafeClass;
+
+	private static Field getOverrideField() {
+		try {
+			return AccessibleObject.class.getDeclaredField("override");
+		} catch (NoSuchFieldException e) {
+			return null;
+		}
+	}
+
+	private static Object getUnsafeInstance() {
+		try {
+			unsafeClass = Class.forName("sun.misc.Unsafe");
+			Field unsafeField = unsafeClass.getDeclaredField("theUnsafe");
+			unsafeField.setAccessible(true);
+			return unsafeField.get(null);
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
 	private final Object theUnsafe = getUnsafeInstance();
+
 	private final Field overrideField = getOverrideField();
 
 	/** {@inheritDoc} */
@@ -66,24 +87,5 @@ final class UnsafeReflectionAccessor extends ReflectionAccessor {
 			}
 		}
 		return false;
-	}
-
-	private static Object getUnsafeInstance() {
-		try {
-			unsafeClass = Class.forName("sun.misc.Unsafe");
-			Field unsafeField = unsafeClass.getDeclaredField("theUnsafe");
-			unsafeField.setAccessible(true);
-			return unsafeField.get(null);
-		} catch (Exception e) {
-			return null;
-		}
-	}
-
-	private static Field getOverrideField() {
-		try {
-			return AccessibleObject.class.getDeclaredField("override");
-		} catch (NoSuchFieldException e) {
-			return null;
-		}
 	}
 }

@@ -1,22 +1,19 @@
 package custom.gui.gui.object;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
 
 import custom.gui.gui.Gui;
 import custom.gui.gui.GuiUtil;
-import custom.gui.networkgui.NetWorkGuiField;
 import net.minecraft.client.gui.GuiTextField;
 
-public class EGuiField extends EGuiObject {
+public class EGuiField implements EGuiObject {
 
-	public int x, y, width, height, id;
+	public int x, y, width, height, id, maxStringLength;
 	public GuiTextField instance;
 
-	public EGuiField(String json) {
-		Gson gson = new GsonBuilder().create();
-		NetWorkGuiField in = gson.fromJson(json, NetWorkGuiField.class);
-		GuiUtil.writeInObject(this, in);
+	public EGuiField(JsonObject obj) {
+		GuiUtil.writeInObject(new Gson().fromJson(obj, this.getClass()), this);
 	}
 
 	@Override
@@ -27,6 +24,7 @@ public class EGuiField extends EGuiObject {
 	@Override
 	public void init(Gui gui) {
 		instance = new GuiTextField(id, gui.getFontRenderer(), x, y, width, height);
+		instance.setMaxStringLength(maxStringLength);
 		gui.GuiFieldList.add(instance);
 	}
 

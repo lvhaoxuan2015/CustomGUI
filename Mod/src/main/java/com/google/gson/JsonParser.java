@@ -34,18 +34,25 @@ import com.google.gson.stream.MalformedJsonException;
 public final class JsonParser {
 
 	/**
-	 * Parses the specified JSON string into a parse tree
+	 * Returns the next value from the JSON stream as a parse tree.
 	 *
-	 * @param json
-	 *            JSON text
-	 * @return a parse tree of {@link JsonElement}s corresponding to the specified
-	 *         JSON
 	 * @throws JsonParseException
-	 *             if the specified text is not valid JSON
-	 * @since 1.3
+	 *             if there is an IOException or if the specified text is not valid
+	 *             JSON
+	 * @since 1.6
 	 */
-	public JsonElement parse(String json) throws JsonSyntaxException {
-		return parse(new StringReader(json));
+	public JsonElement parse(JsonReader json) throws JsonIOException, JsonSyntaxException {
+		boolean lenient = json.isLenient();
+		json.setLenient(true);
+		try {
+			return Streams.parse(json);
+		} catch (StackOverflowError e) {
+			throw new JsonParseException("Failed parsing JSON source: " + json + " to Json", e);
+		} catch (OutOfMemoryError e) {
+			throw new JsonParseException("Failed parsing JSON source: " + json + " to Json", e);
+		} finally {
+			json.setLenient(lenient);
+		}
 	}
 
 	/**
@@ -77,24 +84,17 @@ public final class JsonParser {
 	}
 
 	/**
-	 * Returns the next value from the JSON stream as a parse tree.
+	 * Parses the specified JSON string into a parse tree
 	 *
+	 * @param json
+	 *            JSON text
+	 * @return a parse tree of {@link JsonElement}s corresponding to the specified
+	 *         JSON
 	 * @throws JsonParseException
-	 *             if there is an IOException or if the specified text is not valid
-	 *             JSON
-	 * @since 1.6
+	 *             if the specified text is not valid JSON
+	 * @since 1.3
 	 */
-	public JsonElement parse(JsonReader json) throws JsonIOException, JsonSyntaxException {
-		boolean lenient = json.isLenient();
-		json.setLenient(true);
-		try {
-			return Streams.parse(json);
-		} catch (StackOverflowError e) {
-			throw new JsonParseException("Failed parsing JSON source: " + json + " to Json", e);
-		} catch (OutOfMemoryError e) {
-			throw new JsonParseException("Failed parsing JSON source: " + json + " to Json", e);
-		} finally {
-			json.setLenient(lenient);
-		}
+	public JsonElement parse(String json) throws JsonSyntaxException {
+		return parse(new StringReader(json));
 	}
 }

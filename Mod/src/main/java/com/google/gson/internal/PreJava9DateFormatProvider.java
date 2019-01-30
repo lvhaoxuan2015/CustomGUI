@@ -25,24 +25,6 @@ import java.util.Locale;
  */
 public class PreJava9DateFormatProvider {
 
-	/**
-	 * Returns the same DateFormat as
-	 * {@code DateFormat.getDateInstance(style, Locale.US)} in Java 8 or below.
-	 */
-	public static DateFormat getUSDateFormat(int style) {
-		return new SimpleDateFormat(getDateFormatPattern(style), Locale.US);
-	}
-
-	/**
-	 * Returns the same DateFormat as
-	 * {@code DateFormat.getDateTimeInstance(dateStyle, timeStyle, Locale.US)} in
-	 * Java 8 or below.
-	 */
-	public static DateFormat getUSDateTimeFormat(int dateStyle, int timeStyle) {
-		String pattern = getDatePartOfDateTimePattern(dateStyle) + " " + getTimePartOfDateTimePattern(timeStyle);
-		return new SimpleDateFormat(pattern, Locale.US);
-	}
-
 	private static String getDateFormatPattern(int style) {
 		switch (style) {
 		case DateFormat.SHORT:
@@ -85,5 +67,23 @@ public class PreJava9DateFormatProvider {
 		default:
 			throw new IllegalArgumentException("Unknown DateFormat style: " + timeStyle);
 		}
+	}
+
+	/**
+	 * Returns the same DateFormat as
+	 * {@code DateFormat.getDateInstance(style, Locale.US)} in Java 8 or below.
+	 */
+	public static DateFormat getUSDateFormat(int style) {
+		return new SimpleDateFormat(getDateFormatPattern(style), Locale.US);
+	}
+
+	/**
+	 * Returns the same DateFormat as
+	 * {@code DateFormat.getDateTimeInstance(dateStyle, timeStyle, Locale.US)} in
+	 * Java 8 or below.
+	 */
+	public static DateFormat getUSDateTimeFormat(int dateStyle, int timeStyle) {
+		String pattern = getDatePartOfDateTimePattern(dateStyle) + " " + getTimePartOfDateTimePattern(timeStyle);
+		return new SimpleDateFormat(pattern, Locale.US);
 	}
 }

@@ -16,6 +16,10 @@
 
 package com.google.gson.internal;
 
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.Writer;
+
 import com.google.gson.JsonElement;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonNull;
@@ -25,16 +29,64 @@ import com.google.gson.internal.bind.TypeAdapters;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import com.google.gson.stream.MalformedJsonException;
-import java.io.EOFException;
-import java.io.IOException;
-import java.io.Writer;
 
 /**
  * Reads and writes GSON parse trees over streams.
  */
 public final class Streams {
-	private Streams() {
-		throw new UnsupportedOperationException();
+	/**
+	 * Adapts an {@link Appendable} so it can be passed anywhere a {@link Writer} is
+	 * used.
+	 */
+	private static final class AppendableWriter extends Writer {
+		/**
+		 * A mutable char sequence pointing at a single char[].
+		 */
+		static class CurrentWrite implements CharSequence {
+			char[] chars;
+
+			@Override
+			public char charAt(int i) {
+				return chars[i];
+			}
+
+			@Override
+			public int length() {
+				return chars.length;
+			}
+
+			@Override
+			public CharSequence subSequence(int start, int end) {
+				return new String(chars, start, end - start);
+			}
+		}
+
+		private final Appendable appendable;
+
+		private final CurrentWrite currentWrite = new CurrentWrite();
+
+		AppendableWriter(Appendable appendable) {
+			this.appendable = appendable;
+		}
+
+		@Override
+		public void close() {
+		}
+
+		@Override
+		public void flush() {
+		}
+
+		@Override
+		public void write(char[] chars, int offset, int length) throws IOException {
+			currentWrite.chars = chars;
+			appendable.append(currentWrite, offset, offset + length);
+		}
+
+		@Override
+		public void write(int i) throws IOException {
+			appendable.append((char) i);
+		}
 	}
 
 	/**
@@ -76,58 +128,8 @@ public final class Streams {
 		return appendable instanceof Writer ? (Writer) appendable : new AppendableWriter(appendable);
 	}
 
-	/**
-	 * Adapts an {@link Appendable} so it can be passed anywhere a {@link Writer} is
-	 * used.
-	 */
-	private static final class AppendableWriter extends Writer {
-		private final Appendable appendable;
-		private final CurrentWrite currentWrite = new CurrentWrite();
-
-		AppendableWriter(Appendable appendable) {
-			this.appendable = appendable;
-		}
-
-		@Override
-		public void write(char[] chars, int offset, int length) throws IOException {
-			currentWrite.chars = chars;
-			appendable.append(currentWrite, offset, offset + length);
-		}
-
-		@Override
-		public void write(int i) throws IOException {
-			appendable.append((char) i);
-		}
-
-		@Override
-		public void flush() {
-		}
-
-		@Override
-		public void close() {
-		}
-
-		/**
-		 * A mutable char sequence pointing at a single char[].
-		 */
-		static class CurrentWrite implements CharSequence {
-			char[] chars;
-
-			@Override
-			public int length() {
-				return chars.length;
-			}
-
-			@Override
-			public char charAt(int i) {
-				return chars[i];
-			}
-
-			@Override
-			public CharSequence subSequence(int start, int end) {
-				return new String(chars, start, end - start);
-			}
-		}
+	private Streams() {
+		throw new UnsupportedOperationException();
 	}
 
 }

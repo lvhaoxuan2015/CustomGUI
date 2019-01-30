@@ -37,6 +37,207 @@ import java.util.Set;
  * This implementation was derived from Android 4.1's TreeMap class.
  */
 public final class LinkedTreeMap<K, V> extends AbstractMap<K, V> implements Serializable {
+	class EntrySet extends AbstractSet<Entry<K, V>> {
+		@Override
+		public void clear() {
+			LinkedTreeMap.this.clear();
+		}
+
+		@Override
+		public boolean contains(Object o) {
+			return o instanceof Entry && findByEntry((Entry<?, ?>) o) != null;
+		}
+
+		@Override
+		public Iterator<Entry<K, V>> iterator() {
+			return new LinkedTreeMapIterator<Entry<K, V>>() {
+				@Override
+				public Entry<K, V> next() {
+					return nextNode();
+				}
+			};
+		}
+
+		@Override
+		public boolean remove(Object o) {
+			if (!(o instanceof Entry)) {
+				return false;
+			}
+
+			Node<K, V> node = findByEntry((Entry<?, ?>) o);
+			if (node == null) {
+				return false;
+			}
+			removeInternal(node, true);
+			return true;
+		}
+
+		@Override
+		public int size() {
+			return size;
+		}
+	}
+
+	final class KeySet extends AbstractSet<K> {
+		@Override
+		public void clear() {
+			LinkedTreeMap.this.clear();
+		}
+
+		@Override
+		public boolean contains(Object o) {
+			return containsKey(o);
+		}
+
+		@Override
+		public Iterator<K> iterator() {
+			return new LinkedTreeMapIterator<K>() {
+				@Override
+				public K next() {
+					return nextNode().key;
+				}
+			};
+		}
+
+		@Override
+		public boolean remove(Object key) {
+			return removeInternalByKey(key) != null;
+		}
+
+		@Override
+		public int size() {
+			return size;
+		}
+	}
+
+	private abstract class LinkedTreeMapIterator<T> implements Iterator<T> {
+		Node<K, V> next = header.next;
+		Node<K, V> lastReturned = null;
+		int expectedModCount = modCount;
+
+		LinkedTreeMapIterator() {
+		}
+
+		@Override
+		public final boolean hasNext() {
+			return next != header;
+		}
+
+		final Node<K, V> nextNode() {
+			Node<K, V> e = next;
+			if (e == header) {
+				throw new NoSuchElementException();
+			}
+			if (modCount != expectedModCount) {
+				throw new ConcurrentModificationException();
+			}
+			next = e.next;
+			return lastReturned = e;
+		}
+
+		@Override
+		public final void remove() {
+			if (lastReturned == null) {
+				throw new IllegalStateException();
+			}
+			removeInternal(lastReturned, true);
+			lastReturned = null;
+			expectedModCount = modCount;
+		}
+	}
+
+	static final class Node<K, V> implements Entry<K, V> {
+		Node<K, V> parent;
+		Node<K, V> left;
+		Node<K, V> right;
+		Node<K, V> next;
+		Node<K, V> prev;
+		final K key;
+		V value;
+		int height;
+
+		/** Create the header entry */
+		Node() {
+			key = null;
+			next = prev = this;
+		}
+
+		/** Create a regular entry */
+		Node(Node<K, V> parent, K key, Node<K, V> next, Node<K, V> prev) {
+			this.parent = parent;
+			this.key = key;
+			this.height = 1;
+			this.next = next;
+			this.prev = prev;
+			prev.next = this;
+			next.prev = this;
+		}
+
+		@SuppressWarnings("rawtypes")
+		@Override
+		public boolean equals(Object o) {
+			if (o instanceof Entry) {
+				Entry other = (Entry) o;
+				return (key == null ? other.getKey() == null : key.equals(other.getKey()))
+						&& (value == null ? other.getValue() == null : value.equals(other.getValue()));
+			}
+			return false;
+		}
+
+		/**
+		 * Returns the first node in this subtree.
+		 */
+		public Node<K, V> first() {
+			Node<K, V> node = this;
+			Node<K, V> child = node.left;
+			while (child != null) {
+				node = child;
+				child = node.left;
+			}
+			return node;
+		}
+
+		@Override
+		public K getKey() {
+			return key;
+		}
+
+		@Override
+		public V getValue() {
+			return value;
+		}
+
+		@Override
+		public int hashCode() {
+			return (key == null ? 0 : key.hashCode()) ^ (value == null ? 0 : value.hashCode());
+		}
+
+		/**
+		 * Returns the last node in this subtree.
+		 */
+		public Node<K, V> last() {
+			Node<K, V> node = this;
+			Node<K, V> child = node.right;
+			while (child != null) {
+				node = child;
+				child = node.right;
+			}
+			return node;
+		}
+
+		@Override
+		public V setValue(V value) {
+			V oldValue = this.value;
+			this.value = value;
+			return oldValue;
+		}
+
+		@Override
+		public String toString() {
+			return key + "=" + value;
+		}
+	}
+
 	@SuppressWarnings({ "unchecked", "rawtypes" }) // to avoid Comparable<Comparable<Comparable<...>>>
 	private static final Comparator<Comparable> NATURAL_ORDER = new Comparator<Comparable>() {
 		@Override
@@ -46,12 +247,19 @@ public final class LinkedTreeMap<K, V> extends AbstractMap<K, V> implements Seri
 	};
 
 	Comparator<? super K> comparator;
+
 	Node<K, V> root;
+
 	int size = 0;
+
 	int modCount = 0;
 
 	// Used to preserve iteration order
 	final Node<K, V> header = new Node<K, V>();
+
+	private EntrySet entrySet;
+
+	private KeySet keySet;
 
 	/**
 	 * Create a natural order, empty tree map whose keys must be mutually comparable
@@ -76,33 +284,6 @@ public final class LinkedTreeMap<K, V> extends AbstractMap<K, V> implements Seri
 	}
 
 	@Override
-	public int size() {
-		return size;
-	}
-
-	@Override
-	public V get(Object key) {
-		Node<K, V> node = findByObject(key);
-		return node != null ? node.value : null;
-	}
-
-	@Override
-	public boolean containsKey(Object key) {
-		return findByObject(key) != null;
-	}
-
-	@Override
-	public V put(K key, V value) {
-		if (key == null) {
-			throw new NullPointerException("key == null");
-		}
-		Node<K, V> created = find(key, true);
-		V result = created.value;
-		created.value = value;
-		return result;
-	}
-
-	@Override
 	public void clear() {
 		root = null;
 		size = 0;
@@ -114,9 +295,18 @@ public final class LinkedTreeMap<K, V> extends AbstractMap<K, V> implements Seri
 	}
 
 	@Override
-	public V remove(Object key) {
-		Node<K, V> node = removeInternalByKey(key);
-		return node != null ? node.value : null;
+	public boolean containsKey(Object key) {
+		return findByObject(key) != null;
+	}
+
+	@Override
+	public Set<Entry<K, V>> entrySet() {
+		EntrySet result = entrySet;
+		return result != null ? result : (entrySet = new EntrySet());
+	}
+
+	private boolean equal(Object a, Object b) {
+		return a == b || (a != null && a.equals(b));
 	}
 
 	/**
@@ -184,15 +374,6 @@ public final class LinkedTreeMap<K, V> extends AbstractMap<K, V> implements Seri
 		return created;
 	}
 
-	@SuppressWarnings("unchecked")
-	Node<K, V> findByObject(Object key) {
-		try {
-			return key != null ? find((K) key, false) : null;
-		} catch (ClassCastException e) {
-			return null;
-		}
-	}
-
 	/**
 	 * Returns this map's entry that has the same key and value as {@code
 	 * entry}, or null if this map has no such entry.
@@ -209,8 +390,110 @@ public final class LinkedTreeMap<K, V> extends AbstractMap<K, V> implements Seri
 		return valuesEqual ? mine : null;
 	}
 
-	private boolean equal(Object a, Object b) {
-		return a == b || (a != null && a.equals(b));
+	@SuppressWarnings("unchecked")
+	Node<K, V> findByObject(Object key) {
+		try {
+			return key != null ? find((K) key, false) : null;
+		} catch (ClassCastException e) {
+			return null;
+		}
+	}
+
+	@Override
+	public V get(Object key) {
+		Node<K, V> node = findByObject(key);
+		return node != null ? node.value : null;
+	}
+
+	@Override
+	public Set<K> keySet() {
+		KeySet result = keySet;
+		return result != null ? result : (keySet = new KeySet());
+	}
+
+	@Override
+	public V put(K key, V value) {
+		if (key == null) {
+			throw new NullPointerException("key == null");
+		}
+		Node<K, V> created = find(key, true);
+		V result = created.value;
+		created.value = value;
+		return result;
+	}
+
+	/**
+	 * Rebalances the tree by making any AVL rotations necessary between the
+	 * newly-unbalanced node and the tree's root.
+	 *
+	 * @param insert
+	 *            true if the node was unbalanced by an insert; false if it was by a
+	 *            removal.
+	 */
+	private void rebalance(Node<K, V> unbalanced, boolean insert) {
+		for (Node<K, V> node = unbalanced; node != null; node = node.parent) {
+			Node<K, V> left = node.left;
+			Node<K, V> right = node.right;
+			int leftHeight = left != null ? left.height : 0;
+			int rightHeight = right != null ? right.height : 0;
+
+			int delta = leftHeight - rightHeight;
+			if (delta == -2) {
+				Node<K, V> rightLeft = right.left;
+				Node<K, V> rightRight = right.right;
+				int rightRightHeight = rightRight != null ? rightRight.height : 0;
+				int rightLeftHeight = rightLeft != null ? rightLeft.height : 0;
+
+				int rightDelta = rightLeftHeight - rightRightHeight;
+				if (rightDelta == -1 || (rightDelta == 0 && !insert)) {
+					rotateLeft(node); // AVL right right
+				} else {
+					assert (rightDelta == 1);
+					rotateRight(right); // AVL right left
+					rotateLeft(node);
+				}
+				if (insert) {
+					break; // no further rotations will be necessary
+				}
+
+			} else if (delta == 2) {
+				Node<K, V> leftLeft = left.left;
+				Node<K, V> leftRight = left.right;
+				int leftRightHeight = leftRight != null ? leftRight.height : 0;
+				int leftLeftHeight = leftLeft != null ? leftLeft.height : 0;
+
+				int leftDelta = leftLeftHeight - leftRightHeight;
+				if (leftDelta == 1 || (leftDelta == 0 && !insert)) {
+					rotateRight(node); // AVL left left
+				} else {
+					assert (leftDelta == -1);
+					rotateLeft(left); // AVL left right
+					rotateRight(node);
+				}
+				if (insert) {
+					break; // no further rotations will be necessary
+				}
+
+			} else if (delta == 0) {
+				node.height = leftHeight + 1; // leftHeight == rightHeight
+				if (insert) {
+					break; // the insert caused balance, so rebalancing is done!
+				}
+
+			} else {
+				assert (delta == -1 || delta == 1);
+				node.height = Math.max(leftHeight, rightHeight) + 1;
+				if (!insert) {
+					break; // the height hasn't changed, so rebalancing is done!
+				}
+			}
+		}
+	}
+
+	@Override
+	public V remove(Object key) {
+		Node<K, V> node = removeInternalByKey(key);
+		return node != null ? node.value : null;
 	}
 
 	/**
@@ -306,74 +589,6 @@ public final class LinkedTreeMap<K, V> extends AbstractMap<K, V> implements Seri
 	}
 
 	/**
-	 * Rebalances the tree by making any AVL rotations necessary between the
-	 * newly-unbalanced node and the tree's root.
-	 *
-	 * @param insert
-	 *            true if the node was unbalanced by an insert; false if it was by a
-	 *            removal.
-	 */
-	private void rebalance(Node<K, V> unbalanced, boolean insert) {
-		for (Node<K, V> node = unbalanced; node != null; node = node.parent) {
-			Node<K, V> left = node.left;
-			Node<K, V> right = node.right;
-			int leftHeight = left != null ? left.height : 0;
-			int rightHeight = right != null ? right.height : 0;
-
-			int delta = leftHeight - rightHeight;
-			if (delta == -2) {
-				Node<K, V> rightLeft = right.left;
-				Node<K, V> rightRight = right.right;
-				int rightRightHeight = rightRight != null ? rightRight.height : 0;
-				int rightLeftHeight = rightLeft != null ? rightLeft.height : 0;
-
-				int rightDelta = rightLeftHeight - rightRightHeight;
-				if (rightDelta == -1 || (rightDelta == 0 && !insert)) {
-					rotateLeft(node); // AVL right right
-				} else {
-					assert (rightDelta == 1);
-					rotateRight(right); // AVL right left
-					rotateLeft(node);
-				}
-				if (insert) {
-					break; // no further rotations will be necessary
-				}
-
-			} else if (delta == 2) {
-				Node<K, V> leftLeft = left.left;
-				Node<K, V> leftRight = left.right;
-				int leftRightHeight = leftRight != null ? leftRight.height : 0;
-				int leftLeftHeight = leftLeft != null ? leftLeft.height : 0;
-
-				int leftDelta = leftLeftHeight - leftRightHeight;
-				if (leftDelta == 1 || (leftDelta == 0 && !insert)) {
-					rotateRight(node); // AVL left left
-				} else {
-					assert (leftDelta == -1);
-					rotateLeft(left); // AVL left right
-					rotateRight(node);
-				}
-				if (insert) {
-					break; // no further rotations will be necessary
-				}
-
-			} else if (delta == 0) {
-				node.height = leftHeight + 1; // leftHeight == rightHeight
-				if (insert) {
-					break; // the insert caused balance, so rebalancing is done!
-				}
-
-			} else {
-				assert (delta == -1 || delta == 1);
-				node.height = Math.max(leftHeight, rightHeight) + 1;
-				if (!insert) {
-					break; // the height hasn't changed, so rebalancing is done!
-				}
-			}
-		}
-	}
-
-	/**
 	 * Rotates the subtree so that its root's right child is the new root.
 	 */
 	private void rotateLeft(Node<K, V> root) {
@@ -425,220 +640,9 @@ public final class LinkedTreeMap<K, V> extends AbstractMap<K, V> implements Seri
 		pivot.height = Math.max(root.height, pivotLeft != null ? pivotLeft.height : 0) + 1;
 	}
 
-	private EntrySet entrySet;
-	private KeySet keySet;
-
 	@Override
-	public Set<Entry<K, V>> entrySet() {
-		EntrySet result = entrySet;
-		return result != null ? result : (entrySet = new EntrySet());
-	}
-
-	@Override
-	public Set<K> keySet() {
-		KeySet result = keySet;
-		return result != null ? result : (keySet = new KeySet());
-	}
-
-	static final class Node<K, V> implements Entry<K, V> {
-		Node<K, V> parent;
-		Node<K, V> left;
-		Node<K, V> right;
-		Node<K, V> next;
-		Node<K, V> prev;
-		final K key;
-		V value;
-		int height;
-
-		/** Create the header entry */
-		Node() {
-			key = null;
-			next = prev = this;
-		}
-
-		/** Create a regular entry */
-		Node(Node<K, V> parent, K key, Node<K, V> next, Node<K, V> prev) {
-			this.parent = parent;
-			this.key = key;
-			this.height = 1;
-			this.next = next;
-			this.prev = prev;
-			prev.next = this;
-			next.prev = this;
-		}
-
-		@Override
-		public K getKey() {
-			return key;
-		}
-
-		@Override
-		public V getValue() {
-			return value;
-		}
-
-		@Override
-		public V setValue(V value) {
-			V oldValue = this.value;
-			this.value = value;
-			return oldValue;
-		}
-
-		@SuppressWarnings("rawtypes")
-		@Override
-		public boolean equals(Object o) {
-			if (o instanceof Entry) {
-				Entry other = (Entry) o;
-				return (key == null ? other.getKey() == null : key.equals(other.getKey()))
-						&& (value == null ? other.getValue() == null : value.equals(other.getValue()));
-			}
-			return false;
-		}
-
-		@Override
-		public int hashCode() {
-			return (key == null ? 0 : key.hashCode()) ^ (value == null ? 0 : value.hashCode());
-		}
-
-		@Override
-		public String toString() {
-			return key + "=" + value;
-		}
-
-		/**
-		 * Returns the first node in this subtree.
-		 */
-		public Node<K, V> first() {
-			Node<K, V> node = this;
-			Node<K, V> child = node.left;
-			while (child != null) {
-				node = child;
-				child = node.left;
-			}
-			return node;
-		}
-
-		/**
-		 * Returns the last node in this subtree.
-		 */
-		public Node<K, V> last() {
-			Node<K, V> node = this;
-			Node<K, V> child = node.right;
-			while (child != null) {
-				node = child;
-				child = node.right;
-			}
-			return node;
-		}
-	}
-
-	private abstract class LinkedTreeMapIterator<T> implements Iterator<T> {
-		Node<K, V> next = header.next;
-		Node<K, V> lastReturned = null;
-		int expectedModCount = modCount;
-
-		LinkedTreeMapIterator() {
-		}
-
-		@Override
-		public final boolean hasNext() {
-			return next != header;
-		}
-
-		final Node<K, V> nextNode() {
-			Node<K, V> e = next;
-			if (e == header) {
-				throw new NoSuchElementException();
-			}
-			if (modCount != expectedModCount) {
-				throw new ConcurrentModificationException();
-			}
-			next = e.next;
-			return lastReturned = e;
-		}
-
-		@Override
-		public final void remove() {
-			if (lastReturned == null) {
-				throw new IllegalStateException();
-			}
-			removeInternal(lastReturned, true);
-			lastReturned = null;
-			expectedModCount = modCount;
-		}
-	}
-
-	class EntrySet extends AbstractSet<Entry<K, V>> {
-		@Override
-		public int size() {
-			return size;
-		}
-
-		@Override
-		public Iterator<Entry<K, V>> iterator() {
-			return new LinkedTreeMapIterator<Entry<K, V>>() {
-				@Override
-				public Entry<K, V> next() {
-					return nextNode();
-				}
-			};
-		}
-
-		@Override
-		public boolean contains(Object o) {
-			return o instanceof Entry && findByEntry((Entry<?, ?>) o) != null;
-		}
-
-		@Override
-		public boolean remove(Object o) {
-			if (!(o instanceof Entry)) {
-				return false;
-			}
-
-			Node<K, V> node = findByEntry((Entry<?, ?>) o);
-			if (node == null) {
-				return false;
-			}
-			removeInternal(node, true);
-			return true;
-		}
-
-		@Override
-		public void clear() {
-			LinkedTreeMap.this.clear();
-		}
-	}
-
-	final class KeySet extends AbstractSet<K> {
-		@Override
-		public int size() {
-			return size;
-		}
-
-		@Override
-		public Iterator<K> iterator() {
-			return new LinkedTreeMapIterator<K>() {
-				@Override
-				public K next() {
-					return nextNode().key;
-				}
-			};
-		}
-
-		@Override
-		public boolean contains(Object o) {
-			return containsKey(o);
-		}
-
-		@Override
-		public boolean remove(Object key) {
-			return removeInternalByKey(key) != null;
-		}
-
-		@Override
-		public void clear() {
-			LinkedTreeMap.this.clear();
-		}
+	public int size() {
+		return size;
 	}
 
 	/**

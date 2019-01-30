@@ -39,12 +39,6 @@ public abstract class ReflectionAccessor {
 			: new UnsafeReflectionAccessor();
 
 	/**
-	 * Does the same as {@code ao.setAccessible(true)}, but never throws
-	 * {@link java.lang.reflect.InaccessibleObjectException}
-	 */
-	public abstract void makeAccessible(AccessibleObject ao);
-
-	/**
 	 * Obtains a {@link ReflectionAccessor} instance suitable for the current Java
 	 * version.
 	 * <p>
@@ -57,4 +51,10 @@ public abstract class ReflectionAccessor {
 	public static ReflectionAccessor getInstance() {
 		return instance;
 	}
+
+	/**
+	 * Does the same as {@code ao.setAccessible(true)}, but never throws
+	 * {@link java.lang.reflect.InaccessibleObjectException}
+	 */
+	public abstract void makeAccessible(AccessibleObject ao);
 }

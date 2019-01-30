@@ -45,6 +45,14 @@ final class DefaultDateTypeAdapter extends TypeAdapter<Date> {
 
 	private static final String SIMPLE_NAME = "DefaultDateTypeAdapter";
 
+	private static Class<? extends Date> verifyDateType(Class<? extends Date> dateType) {
+		if (dateType != Date.class && dateType != java.sql.Date.class && dateType != Timestamp.class) {
+			throw new IllegalArgumentException("Date type must be one of " + Date.class + ", " + Timestamp.class
+					+ ", or " + java.sql.Date.class + " but was " + dateType);
+		}
+		return dateType;
+	}
+
 	private final Class<? extends Date> dateType;
 
 	/**
@@ -64,14 +72,6 @@ final class DefaultDateTypeAdapter extends TypeAdapter<Date> {
 		}
 	}
 
-	DefaultDateTypeAdapter(Class<? extends Date> dateType, String datePattern) {
-		this.dateType = verifyDateType(dateType);
-		dateFormats.add(new SimpleDateFormat(datePattern, Locale.US));
-		if (!Locale.getDefault().equals(Locale.US)) {
-			dateFormats.add(new SimpleDateFormat(datePattern));
-		}
-	}
-
 	DefaultDateTypeAdapter(Class<? extends Date> dateType, int style) {
 		this.dateType = verifyDateType(dateType);
 		dateFormats.add(DateFormat.getDateInstance(style, Locale.US));
@@ -81,10 +81,6 @@ final class DefaultDateTypeAdapter extends TypeAdapter<Date> {
 		if (JavaVersion.isJava9OrLater()) {
 			dateFormats.add(PreJava9DateFormatProvider.getUSDateFormat(style));
 		}
-	}
-
-	public DefaultDateTypeAdapter(int dateStyle, int timeStyle) {
-		this(Date.class, dateStyle, timeStyle);
 	}
 
 	public DefaultDateTypeAdapter(Class<? extends Date> dateType, int dateStyle, int timeStyle) {
@@ -98,26 +94,31 @@ final class DefaultDateTypeAdapter extends TypeAdapter<Date> {
 		}
 	}
 
-	private static Class<? extends Date> verifyDateType(Class<? extends Date> dateType) {
-		if (dateType != Date.class && dateType != java.sql.Date.class && dateType != Timestamp.class) {
-			throw new IllegalArgumentException("Date type must be one of " + Date.class + ", " + Timestamp.class
-					+ ", or " + java.sql.Date.class + " but was " + dateType);
+	DefaultDateTypeAdapter(Class<? extends Date> dateType, String datePattern) {
+		this.dateType = verifyDateType(dateType);
+		dateFormats.add(new SimpleDateFormat(datePattern, Locale.US));
+		if (!Locale.getDefault().equals(Locale.US)) {
+			dateFormats.add(new SimpleDateFormat(datePattern));
 		}
-		return dateType;
 	}
 
-	// These methods need to be synchronized since JDK DateFormat classes are not
-	// thread-safe
-	// See issue 162
-	@Override
-	public void write(JsonWriter out, Date value) throws IOException {
-		if (value == null) {
-			out.nullValue();
-			return;
-		}
+	public DefaultDateTypeAdapter(int dateStyle, int timeStyle) {
+		this(Date.class, dateStyle, timeStyle);
+	}
+
+	private Date deserializeToDate(String s) {
 		synchronized (dateFormats) {
-			String dateFormatAsString = dateFormats.get(0).format(value);
-			out.value(dateFormatAsString);
+			for (DateFormat dateFormat : dateFormats) {
+				try {
+					return dateFormat.parse(s);
+				} catch (ParseException ignored) {
+				}
+			}
+			try {
+				return ISO8601Utils.parse(s, new ParsePosition(0));
+			} catch (ParseException e) {
+				throw new JsonSyntaxException(s, e);
+			}
 		}
 	}
 
@@ -140,22 +141,6 @@ final class DefaultDateTypeAdapter extends TypeAdapter<Date> {
 		}
 	}
 
-	private Date deserializeToDate(String s) {
-		synchronized (dateFormats) {
-			for (DateFormat dateFormat : dateFormats) {
-				try {
-					return dateFormat.parse(s);
-				} catch (ParseException ignored) {
-				}
-			}
-			try {
-				return ISO8601Utils.parse(s, new ParsePosition(0));
-			} catch (ParseException e) {
-				throw new JsonSyntaxException(s, e);
-			}
-		}
-	}
-
 	@Override
 	public String toString() {
 		DateFormat defaultFormat = dateFormats.get(0);
@@ -163,6 +148,21 @@ final class DefaultDateTypeAdapter extends TypeAdapter<Date> {
 			return SIMPLE_NAME + '(' + ((SimpleDateFormat) defaultFormat).toPattern() + ')';
 		} else {
 			return SIMPLE_NAME + '(' + defaultFormat.getClass().getSimpleName() + ')';
+		}
+	}
+
+	// These methods need to be synchronized since JDK DateFormat classes are not
+	// thread-safe
+	// See issue 162
+	@Override
+	public void write(JsonWriter out, Date value) throws IOException {
+		if (value == null) {
+			out.nullValue();
+			return;
+		}
+		synchronized (dateFormats) {
+			String dateFormatAsString = dateFormats.get(0).format(value);
+			out.value(dateFormatAsString);
 		}
 	}
 }

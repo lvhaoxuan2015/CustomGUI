@@ -30,8 +30,10 @@ package com.google.gson.internal;
  * @author Joel Leitch
  */
 public final class $Gson$Preconditions {
-	private $Gson$Preconditions() {
-		throw new UnsupportedOperationException();
+	public static void checkArgument(boolean condition) {
+		if (!condition) {
+			throw new IllegalArgumentException();
+		}
 	}
 
 	public static <T> T checkNotNull(T obj) {
@@ -41,9 +43,7 @@ public final class $Gson$Preconditions {
 		return obj;
 	}
 
-	public static void checkArgument(boolean condition) {
-		if (!condition) {
-			throw new IllegalArgumentException();
-		}
+	private $Gson$Preconditions() {
+		throw new UnsupportedOperationException();
 	}
 }

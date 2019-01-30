@@ -16,12 +16,13 @@
 
 package com.google.gson;
 
-import com.google.gson.internal.$Gson$Preconditions;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.Collection;
+
+import com.google.gson.internal.$Gson$Preconditions;
 
 /**
  * A data object that stores attributes of a field.
@@ -45,21 +46,67 @@ public final class FieldAttributes {
 	 */
 	public FieldAttributes(Field f) {
 		$Gson$Preconditions.checkNotNull(f);
-		this.field = f;
+		field = f;
 	}
 
 	/**
-	 * @return the declaring class that contains this field
+	 * Returns the value of the field represented by this {@code Field}, on the
+	 * specified object. The value is automatically wrapped in an object if it has a
+	 * primitive type.
+	 *
+	 * @return the value of the represented field in object {@code obj}; primitive
+	 *         values are wrapped in an appropriate object before being returned
+	 * @throws IllegalAccessException
+	 * @throws IllegalArgumentException
 	 */
-	public Class<?> getDeclaringClass() {
-		return field.getDeclaringClass();
+	Object get(Object instance) throws IllegalAccessException {
+		return field.get(instance);
 	}
 
 	/**
-	 * @return the name of the field
+	 * Return the {@code T} annotation object from this field if it exist; otherwise
+	 * returns {@code null}.
+	 *
+	 * @param annotation
+	 *            the class of the annotation that will be retrieved
+	 * @return the annotation instance if it is bound to the field; otherwise
+	 *         {@code null}
 	 */
-	public String getName() {
-		return field.getName();
+	public <T extends Annotation> T getAnnotation(Class<T> annotation) {
+		return field.getAnnotation(annotation);
+	}
+
+	/**
+	 * Return the annotations that are present on this field.
+	 *
+	 * @return an array of all the annotations set on the field
+	 * @since 1.4
+	 */
+	public Collection<Annotation> getAnnotations() {
+		return Arrays.asList(field.getAnnotations());
+	}
+
+	/**
+	 * Returns the {@code Class} object that was declared for this field.
+	 *
+	 * <p>
+	 * For example, assume the following class definition:
+	 * 
+	 * <pre class="code">
+	 * public class Foo {
+	 * 	private String bar;
+	 * 	private List&lt;String&gt; red;
+	 * }
+	 * </pre>
+	 *
+	 * <p>
+	 * This method would return {@code String.class} for the {@code bar} field and
+	 * {@code List.class} for the {@code red} field.
+	 *
+	 * @return the specific class object that was declared for the field
+	 */
+	public Class<?> getDeclaredClass() {
+		return field.getType();
 	}
 
 	/**
@@ -87,49 +134,17 @@ public final class FieldAttributes {
 	}
 
 	/**
-	 * Returns the {@code Class} object that was declared for this field.
-	 *
-	 * <p>
-	 * For example, assume the following class definition:
-	 * 
-	 * <pre class="code">
-	 * public class Foo {
-	 * 	private String bar;
-	 * 	private List&lt;String&gt; red;
-	 * }
-	 * </pre>
-	 *
-	 * <p>
-	 * This method would return {@code String.class} for the {@code bar} field and
-	 * {@code List.class} for the {@code red} field.
-	 *
-	 * @return the specific class object that was declared for the field
+	 * @return the declaring class that contains this field
 	 */
-	public Class<?> getDeclaredClass() {
-		return field.getType();
+	public Class<?> getDeclaringClass() {
+		return field.getDeclaringClass();
 	}
 
 	/**
-	 * Return the {@code T} annotation object from this field if it exist; otherwise
-	 * returns {@code null}.
-	 *
-	 * @param annotation
-	 *            the class of the annotation that will be retrieved
-	 * @return the annotation instance if it is bound to the field; otherwise
-	 *         {@code null}
+	 * @return the name of the field
 	 */
-	public <T extends Annotation> T getAnnotation(Class<T> annotation) {
-		return field.getAnnotation(annotation);
-	}
-
-	/**
-	 * Return the annotations that are present on this field.
-	 *
-	 * @return an array of all the annotations set on the field
-	 * @since 1.4
-	 */
-	public Collection<Annotation> getAnnotations() {
-		return Arrays.asList(field.getAnnotations());
+	public String getName() {
+		return field.getName();
 	}
 
 	/**
@@ -146,20 +161,6 @@ public final class FieldAttributes {
 	 */
 	public boolean hasModifier(int modifier) {
 		return (field.getModifiers() & modifier) != 0;
-	}
-
-	/**
-	 * Returns the value of the field represented by this {@code Field}, on the
-	 * specified object. The value is automatically wrapped in an object if it has a
-	 * primitive type.
-	 *
-	 * @return the value of the represented field in object {@code obj}; primitive
-	 *         values are wrapped in an appropriate object before being returned
-	 * @throws IllegalAccessException
-	 * @throws IllegalArgumentException
-	 */
-	Object get(Object instance) throws IllegalAccessException {
-		return field.get(instance);
 	}
 
 	/**

@@ -4,50 +4,37 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
-import custom.gui.gui.object.*;
-import custom.gui.networkgui.*;
+import com.google.gson.JsonObject;
+
+import custom.gui.gui.object.EGuiButton;
+import custom.gui.gui.object.EGuiField;
+import custom.gui.gui.object.EGuiImage;
+import custom.gui.gui.object.EGuiObject;
+import custom.gui.gui.object.EGuiString;
 
 public class GuiUtil {
-	public static List<EGuiObject> backToObject(String str) {
-		List<EGuiObject> list = new ArrayList<>();
-		String[] strs = str.split("\\$NEXT\\$");
-		for (String s : strs) {
-			String type = s.split("\\$AND\\$")[0];
-			String json = s.split("\\$AND\\$")[1];
-			list.add(getEGuiObject(type, json));
+	public static List<EGuiObject> backToObject(List<JsonObject> list) {
+		List<EGuiObject> retList = new ArrayList<>();
+		for (JsonObject obj : list) {
+			retList.add(getEGuiObject(obj));
 		}
-		return list;
+		return retList;
 	}
 
-	public static EGuiObject getEGuiObject(String str, String json) {
-		if (str.equalsIgnoreCase("GuiButton")) {
-			return new EGuiButton(json);
+	public static EGuiObject getEGuiObject(JsonObject jsonObj) {
+		if (jsonObj.get("type").getAsString().equalsIgnoreCase("GuiButton")) {
+			return new EGuiButton(jsonObj);
 		}
-		if (str.equalsIgnoreCase("GuiImage")) {
-			return new EGuiImage(json);
+		if (jsonObj.get("type").getAsString().equalsIgnoreCase("GuiImage")) {
+			return new EGuiImage(jsonObj);
 		}
-		if (str.equalsIgnoreCase("GuiString")) {
-			return new EGuiString(json);
+		if (jsonObj.get("type").getAsString().equalsIgnoreCase("GuiString")) {
+			return new EGuiString(jsonObj);
 		}
-		if (str.equalsIgnoreCase("GuiField")) {
-			return new EGuiField(json);
+		if (jsonObj.get("type").getAsString().equalsIgnoreCase("GuiField")) {
+			return new EGuiField(jsonObj);
 		}
 		return null;
-	}
-
-	public static void writeInObject(Object object, NetWorkGuiObject obj) {
-		for (Field f : obj.getClass().getDeclaredFields()) {
-			try {
-				Object value = f.get(obj);
-				String name = f.getName();
-				setValue(object, name, value);
-			} catch (IllegalArgumentException e) {
-			} catch (IllegalAccessException e) {
-			} catch (NoSuchFieldException e) {
-			} catch (SecurityException e) {
-			}
-
-		}
 	}
 
 	public static void setValue(Object instance, String fileName, Object value)
@@ -55,5 +42,17 @@ public class GuiUtil {
 		Field field = instance.getClass().getDeclaredField(fileName);
 		field.setAccessible(true);
 		field.set(instance, value);
+	}
+
+	public static void writeInObject(Object source, Object target) {
+		for (Field f : source.getClass().getDeclaredFields()) {
+			try {
+				f.setAccessible(true);
+				String key = f.getName();
+				Object value = f.get(source);
+				setValue(target, key, value);
+			} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException ex) {
+			}
+		}
 	}
 }

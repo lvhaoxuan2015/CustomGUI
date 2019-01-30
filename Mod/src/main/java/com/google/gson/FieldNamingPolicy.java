@@ -163,6 +163,11 @@ public enum FieldNamingPolicy implements FieldNamingStrategy {
 		}
 	};
 
+	private static String modifyString(char firstCharacter, String srcString, int indexOfSubstring) {
+		return (indexOfSubstring < srcString.length()) ? firstCharacter + srcString.substring(indexOfSubstring)
+				: String.valueOf(firstCharacter);
+	}
+
 	/**
 	 * Converts the field name that uses camel-case define word separation into
 	 * separate words that are separated by the provided {@code separatorString}.
@@ -203,10 +208,5 @@ public enum FieldNamingPolicy implements FieldNamingStrategy {
 		} else {
 			return name;
 		}
-	}
-
-	private static String modifyString(char firstCharacter, String srcString, int indexOfSubstring) {
-		return (indexOfSubstring < srcString.length()) ? firstCharacter + srcString.substring(indexOfSubstring)
-				: String.valueOf(firstCharacter);
 	}
 }

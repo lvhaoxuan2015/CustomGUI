@@ -14,13 +14,9 @@ public class NetWorkGui {
         this.guiID = guiID;
     }
 
-    public String objListToString() {
-        String ret = "";
+    public String objListToJson() {
         Gson gson = new GsonBuilder().create();
-        for (NetWorkGuiObject obj : objList) {
-            ret += obj.type + "$AND$" + gson.toJson(obj) + "$NEXT$";
-        }
-        return ret;
+        return gson.toJson(objList);
     }
 
 }

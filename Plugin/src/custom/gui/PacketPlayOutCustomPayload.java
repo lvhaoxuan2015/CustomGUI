@@ -62,7 +62,6 @@ public class PacketPlayOutCustomPayload {
         }
         try {
             sendPacket.invoke(playerConnection.get(getHandle.invoke(p)), packet);
-
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
             Logger.getLogger(PacketPlayOutCustomPayload.class.getName()).log(Level.SEVERE, null, ex);
         }

@@ -16,11 +16,6 @@
 
 package com.google.gson.stream;
 
-import java.io.Closeable;
-import java.io.Flushable;
-import java.io.IOException;
-import java.io.Writer;
-
 import static com.google.gson.stream.JsonScope.DANGLING_NAME;
 import static com.google.gson.stream.JsonScope.EMPTY_ARRAY;
 import static com.google.gson.stream.JsonScope.EMPTY_DOCUMENT;
@@ -28,6 +23,11 @@ import static com.google.gson.stream.JsonScope.EMPTY_OBJECT;
 import static com.google.gson.stream.JsonScope.NONEMPTY_ARRAY;
 import static com.google.gson.stream.JsonScope.NONEMPTY_DOCUMENT;
 import static com.google.gson.stream.JsonScope.NONEMPTY_OBJECT;
+
+import java.io.Closeable;
+import java.io.Flushable;
+import java.io.IOException;
+import java.io.Writer;
 
 /**
  * Writes a JSON (<a href="http://www.ietf.org/rfc/rfc7159.txt">RFC 7159</a>)
@@ -210,79 +210,55 @@ public class JsonWriter implements Closeable, Flushable {
 	}
 
 	/**
-	 * Sets the indentation string to be repeated for each level of indentation in
-	 * the encoded document. If {@code indent.isEmpty()} the encoded document will
-	 * be compact. Otherwise the encoded document will be more human-readable.
-	 *
-	 * @param indent
-	 *            a string containing only whitespace.
+	 * Inserts any necessary separators and whitespace before a name. Also adjusts
+	 * the stack to expect the name's value.
 	 */
-	public final void setIndent(String indent) {
-		if (indent.length() == 0) {
-			this.indent = null;
-			this.separator = ":";
-		} else {
-			this.indent = indent;
-			this.separator = ": ";
+	private void beforeName() throws IOException {
+		int context = peek();
+		if (context == NONEMPTY_OBJECT) { // first in object
+			out.write(',');
+		} else if (context != EMPTY_OBJECT) { // not in an object!
+			throw new IllegalStateException("Nesting problem.");
 		}
+		newline();
+		replaceTop(DANGLING_NAME);
 	}
 
 	/**
-	 * Configure this writer to relax its syntax rules. By default, this writer only
-	 * emits well-formed JSON as specified by
-	 * <a href="http://www.ietf.org/rfc/rfc7159.txt">RFC 7159</a>. Setting the
-	 * writer to lenient permits the following:
-	 * <ul>
-	 * <li>Top-level values of any type. With strict writing, the top-level value
-	 * must be an object or an array.
-	 * <li>Numbers may be {@link Double#isNaN() NaNs} or {@link Double#isInfinite()
-	 * infinities}.
-	 * </ul>
+	 * Inserts any necessary separators and whitespace before a literal value,
+	 * inline array, or inline object. Also adjusts the stack to expect either a
+	 * closing bracket or another element.
 	 */
-	public final void setLenient(boolean lenient) {
-		this.lenient = lenient;
-	}
+	@SuppressWarnings("fallthrough")
+	private void beforeValue() throws IOException {
+		switch (peek()) {
+		case NONEMPTY_DOCUMENT:
+			if (!lenient) {
+				throw new IllegalStateException("JSON must have only one top-level value.");
+			}
+			// fall-through
+		case EMPTY_DOCUMENT: // first in document
+			replaceTop(NONEMPTY_DOCUMENT);
+			break;
 
-	/**
-	 * Returns true if this writer has relaxed syntax rules.
-	 */
-	public boolean isLenient() {
-		return lenient;
-	}
+		case EMPTY_ARRAY: // first in array
+			replaceTop(NONEMPTY_ARRAY);
+			newline();
+			break;
 
-	/**
-	 * Configure this writer to emit JSON that's safe for direct inclusion in HTML
-	 * and XML documents. This escapes the HTML characters {@code <}, {@code >},
-	 * {@code &} and {@code =} before writing them to the stream. Without this
-	 * setting, your XML/HTML encoder should replace these characters with the
-	 * corresponding escape sequences.
-	 */
-	public final void setHtmlSafe(boolean htmlSafe) {
-		this.htmlSafe = htmlSafe;
-	}
+		case NONEMPTY_ARRAY: // another in array
+			out.append(',');
+			newline();
+			break;
 
-	/**
-	 * Returns true if this writer writes JSON that's safe for inclusion in HTML and
-	 * XML documents.
-	 */
-	public final boolean isHtmlSafe() {
-		return htmlSafe;
-	}
+		case DANGLING_NAME: // value for name
+			out.append(separator);
+			replaceTop(NONEMPTY_OBJECT);
+			break;
 
-	/**
-	 * Sets whether object members are serialized when their value is null. This has
-	 * no impact on array elements. The default is true.
-	 */
-	public final void setSerializeNulls(boolean serializeNulls) {
-		this.serializeNulls = serializeNulls;
-	}
-
-	/**
-	 * Returns true if object members are serialized when their value is null. This
-	 * has no impact on array elements. The default is true.
-	 */
-	public final boolean getSerializeNulls() {
-		return serializeNulls;
+		default:
+			throw new IllegalStateException("Nesting problem.");
+		}
 	}
 
 	/**
@@ -297,15 +273,6 @@ public class JsonWriter implements Closeable, Flushable {
 	}
 
 	/**
-	 * Ends encoding the current array.
-	 *
-	 * @return this writer.
-	 */
-	public JsonWriter endArray() throws IOException {
-		return close(EMPTY_ARRAY, NONEMPTY_ARRAY, "]");
-	}
-
-	/**
 	 * Begins encoding a new object. Each call to this method must be paired with a
 	 * call to {@link #endObject}.
 	 *
@@ -317,23 +284,20 @@ public class JsonWriter implements Closeable, Flushable {
 	}
 
 	/**
-	 * Ends encoding the current object.
+	 * Flushes and closes this writer and the underlying {@link Writer}.
 	 *
-	 * @return this writer.
+	 * @throws IOException
+	 *             if the JSON document is incomplete.
 	 */
-	public JsonWriter endObject() throws IOException {
-		return close(EMPTY_OBJECT, NONEMPTY_OBJECT, "}");
-	}
+	@Override
+	public void close() throws IOException {
+		out.close();
 
-	/**
-	 * Enters a new scope by appending any necessary whitespace and the given
-	 * bracket.
-	 */
-	private JsonWriter open(int empty, String openBracket) throws IOException {
-		beforeValue();
-		push(empty);
-		out.write(openBracket);
-		return this;
+		int size = stackSize;
+		if (size > 1 || size == 1 && stack[size - 1] != NONEMPTY_DOCUMENT) {
+			throw new IOException("Incomplete document");
+		}
+		stackSize = 0;
 	}
 
 	/**
@@ -357,30 +321,74 @@ public class JsonWriter implements Closeable, Flushable {
 		return this;
 	}
 
-	private void push(int newTop) {
-		if (stackSize == stack.length) {
-			int[] newStack = new int[stackSize * 2];
-			System.arraycopy(stack, 0, newStack, 0, stackSize);
-			stack = newStack;
-		}
-		stack[stackSize++] = newTop;
+	/**
+	 * Ends encoding the current array.
+	 *
+	 * @return this writer.
+	 */
+	public JsonWriter endArray() throws IOException {
+		return close(EMPTY_ARRAY, NONEMPTY_ARRAY, "]");
 	}
 
 	/**
-	 * Returns the value on the top of the stack.
+	 * Ends encoding the current object.
+	 *
+	 * @return this writer.
 	 */
-	private int peek() {
+	public JsonWriter endObject() throws IOException {
+		return close(EMPTY_OBJECT, NONEMPTY_OBJECT, "}");
+	}
+
+	/**
+	 * Ensures all buffered data is written to the underlying {@link Writer} and
+	 * flushes that writer.
+	 */
+	@Override
+	public void flush() throws IOException {
 		if (stackSize == 0) {
 			throw new IllegalStateException("JsonWriter is closed.");
 		}
-		return stack[stackSize - 1];
+		out.flush();
 	}
 
 	/**
-	 * Replace the value on the top of the stack with the given value.
+	 * Returns true if object members are serialized when their value is null. This
+	 * has no impact on array elements. The default is true.
 	 */
-	private void replaceTop(int topOfStack) {
-		stack[stackSize - 1] = topOfStack;
+	public final boolean getSerializeNulls() {
+		return serializeNulls;
+	}
+
+	/**
+	 * Returns true if this writer writes JSON that's safe for inclusion in HTML and
+	 * XML documents.
+	 */
+	public final boolean isHtmlSafe() {
+		return htmlSafe;
+	}
+
+	/**
+	 * Returns true if this writer has relaxed syntax rules.
+	 */
+	public boolean isLenient() {
+		return lenient;
+	}
+
+	/**
+	 * Writes {@code value} directly to the writer without quoting or escaping.
+	 *
+	 * @param value
+	 *            the literal string value, or null to encode a null literal.
+	 * @return this writer.
+	 */
+	public JsonWriter jsonValue(String value) throws IOException {
+		if (value == null) {
+			return nullValue();
+		}
+		writeDeferredName();
+		beforeValue();
+		out.append(value);
+		return this;
 	}
 
 	/**
@@ -404,46 +412,15 @@ public class JsonWriter implements Closeable, Flushable {
 		return this;
 	}
 
-	private void writeDeferredName() throws IOException {
-		if (deferredName != null) {
-			beforeName();
-			string(deferredName);
-			deferredName = null;
+	private void newline() throws IOException {
+		if (indent == null) {
+			return;
 		}
-	}
 
-	/**
-	 * Encodes {@code value}.
-	 *
-	 * @param value
-	 *            the literal string value, or null to encode a null literal.
-	 * @return this writer.
-	 */
-	public JsonWriter value(String value) throws IOException {
-		if (value == null) {
-			return nullValue();
+		out.write("\n");
+		for (int i = 1, size = stackSize; i < size; i++) {
+			out.write(indent);
 		}
-		writeDeferredName();
-		beforeValue();
-		string(value);
-		return this;
-	}
-
-	/**
-	 * Writes {@code value} directly to the writer without quoting or escaping.
-	 *
-	 * @param value
-	 *            the literal string value, or null to encode a null literal.
-	 * @return this writer.
-	 */
-	public JsonWriter jsonValue(String value) throws IOException {
-		if (value == null) {
-			return nullValue();
-		}
-		writeDeferredName();
-		beforeValue();
-		out.append(value);
-		return this;
 	}
 
 	/**
@@ -463,6 +440,128 @@ public class JsonWriter implements Closeable, Flushable {
 		beforeValue();
 		out.write("null");
 		return this;
+	}
+
+	/**
+	 * Enters a new scope by appending any necessary whitespace and the given
+	 * bracket.
+	 */
+	private JsonWriter open(int empty, String openBracket) throws IOException {
+		beforeValue();
+		push(empty);
+		out.write(openBracket);
+		return this;
+	}
+
+	/**
+	 * Returns the value on the top of the stack.
+	 */
+	private int peek() {
+		if (stackSize == 0) {
+			throw new IllegalStateException("JsonWriter is closed.");
+		}
+		return stack[stackSize - 1];
+	}
+
+	private void push(int newTop) {
+		if (stackSize == stack.length) {
+			int[] newStack = new int[stackSize * 2];
+			System.arraycopy(stack, 0, newStack, 0, stackSize);
+			stack = newStack;
+		}
+		stack[stackSize++] = newTop;
+	}
+
+	/**
+	 * Replace the value on the top of the stack with the given value.
+	 */
+	private void replaceTop(int topOfStack) {
+		stack[stackSize - 1] = topOfStack;
+	}
+
+	/**
+	 * Configure this writer to emit JSON that's safe for direct inclusion in HTML
+	 * and XML documents. This escapes the HTML characters {@code <}, {@code >},
+	 * {@code &} and {@code =} before writing them to the stream. Without this
+	 * setting, your XML/HTML encoder should replace these characters with the
+	 * corresponding escape sequences.
+	 */
+	public final void setHtmlSafe(boolean htmlSafe) {
+		this.htmlSafe = htmlSafe;
+	}
+
+	/**
+	 * Sets the indentation string to be repeated for each level of indentation in
+	 * the encoded document. If {@code indent.isEmpty()} the encoded document will
+	 * be compact. Otherwise the encoded document will be more human-readable.
+	 *
+	 * @param indent
+	 *            a string containing only whitespace.
+	 */
+	public final void setIndent(String indent) {
+		if (indent.length() == 0) {
+			this.indent = null;
+			separator = ":";
+		} else {
+			this.indent = indent;
+			separator = ": ";
+		}
+	}
+
+	/**
+	 * Configure this writer to relax its syntax rules. By default, this writer only
+	 * emits well-formed JSON as specified by
+	 * <a href="http://www.ietf.org/rfc/rfc7159.txt">RFC 7159</a>. Setting the
+	 * writer to lenient permits the following:
+	 * <ul>
+	 * <li>Top-level values of any type. With strict writing, the top-level value
+	 * must be an object or an array.
+	 * <li>Numbers may be {@link Double#isNaN() NaNs} or {@link Double#isInfinite()
+	 * infinities}.
+	 * </ul>
+	 */
+	public final void setLenient(boolean lenient) {
+		this.lenient = lenient;
+	}
+
+	/**
+	 * Sets whether object members are serialized when their value is null. This has
+	 * no impact on array elements. The default is true.
+	 */
+	public final void setSerializeNulls(boolean serializeNulls) {
+		this.serializeNulls = serializeNulls;
+	}
+
+	private void string(String value) throws IOException {
+		String[] replacements = htmlSafe ? HTML_SAFE_REPLACEMENT_CHARS : REPLACEMENT_CHARS;
+		out.write("\"");
+		int last = 0;
+		int length = value.length();
+		for (int i = 0; i < length; i++) {
+			char c = value.charAt(i);
+			String replacement;
+			if (c < 128) {
+				replacement = replacements[c];
+				if (replacement == null) {
+					continue;
+				}
+			} else if (c == '\u2028') {
+				replacement = "\\u2028";
+			} else if (c == '\u2029') {
+				replacement = "\\u2029";
+			} else {
+				continue;
+			}
+			if (last < i) {
+				out.write(value, last, i - last);
+			}
+			out.write(replacement);
+			last = i + 1;
+		}
+		if (last < length) {
+			out.write(value, last, length - last);
+		}
+		out.write("\"");
 	}
 
 	/**
@@ -546,126 +645,27 @@ public class JsonWriter implements Closeable, Flushable {
 	}
 
 	/**
-	 * Ensures all buffered data is written to the underlying {@link Writer} and
-	 * flushes that writer.
-	 */
-	@Override
-	public void flush() throws IOException {
-		if (stackSize == 0) {
-			throw new IllegalStateException("JsonWriter is closed.");
-		}
-		out.flush();
-	}
-
-	/**
-	 * Flushes and closes this writer and the underlying {@link Writer}.
+	 * Encodes {@code value}.
 	 *
-	 * @throws IOException
-	 *             if the JSON document is incomplete.
+	 * @param value
+	 *            the literal string value, or null to encode a null literal.
+	 * @return this writer.
 	 */
-	@Override
-	public void close() throws IOException {
-		out.close();
-
-		int size = stackSize;
-		if (size > 1 || size == 1 && stack[size - 1] != NONEMPTY_DOCUMENT) {
-			throw new IOException("Incomplete document");
+	public JsonWriter value(String value) throws IOException {
+		if (value == null) {
+			return nullValue();
 		}
-		stackSize = 0;
+		writeDeferredName();
+		beforeValue();
+		string(value);
+		return this;
 	}
 
-	private void string(String value) throws IOException {
-		String[] replacements = htmlSafe ? HTML_SAFE_REPLACEMENT_CHARS : REPLACEMENT_CHARS;
-		out.write("\"");
-		int last = 0;
-		int length = value.length();
-		for (int i = 0; i < length; i++) {
-			char c = value.charAt(i);
-			String replacement;
-			if (c < 128) {
-				replacement = replacements[c];
-				if (replacement == null) {
-					continue;
-				}
-			} else if (c == '\u2028') {
-				replacement = "\\u2028";
-			} else if (c == '\u2029') {
-				replacement = "\\u2029";
-			} else {
-				continue;
-			}
-			if (last < i) {
-				out.write(value, last, i - last);
-			}
-			out.write(replacement);
-			last = i + 1;
-		}
-		if (last < length) {
-			out.write(value, last, length - last);
-		}
-		out.write("\"");
-	}
-
-	private void newline() throws IOException {
-		if (indent == null) {
-			return;
-		}
-
-		out.write("\n");
-		for (int i = 1, size = stackSize; i < size; i++) {
-			out.write(indent);
-		}
-	}
-
-	/**
-	 * Inserts any necessary separators and whitespace before a name. Also adjusts
-	 * the stack to expect the name's value.
-	 */
-	private void beforeName() throws IOException {
-		int context = peek();
-		if (context == NONEMPTY_OBJECT) { // first in object
-			out.write(',');
-		} else if (context != EMPTY_OBJECT) { // not in an object!
-			throw new IllegalStateException("Nesting problem.");
-		}
-		newline();
-		replaceTop(DANGLING_NAME);
-	}
-
-	/**
-	 * Inserts any necessary separators and whitespace before a literal value,
-	 * inline array, or inline object. Also adjusts the stack to expect either a
-	 * closing bracket or another element.
-	 */
-	@SuppressWarnings("fallthrough")
-	private void beforeValue() throws IOException {
-		switch (peek()) {
-		case NONEMPTY_DOCUMENT:
-			if (!lenient) {
-				throw new IllegalStateException("JSON must have only one top-level value.");
-			}
-			// fall-through
-		case EMPTY_DOCUMENT: // first in document
-			replaceTop(NONEMPTY_DOCUMENT);
-			break;
-
-		case EMPTY_ARRAY: // first in array
-			replaceTop(NONEMPTY_ARRAY);
-			newline();
-			break;
-
-		case NONEMPTY_ARRAY: // another in array
-			out.append(',');
-			newline();
-			break;
-
-		case DANGLING_NAME: // value for name
-			out.append(separator);
-			replaceTop(NONEMPTY_OBJECT);
-			break;
-
-		default:
-			throw new IllegalStateException("Nesting problem.");
+	private void writeDeferredName() throws IOException {
+		if (deferredName != null) {
+			beforeName();
+			string(deferredName);
+			deferredName = null;
 		}
 	}
 }

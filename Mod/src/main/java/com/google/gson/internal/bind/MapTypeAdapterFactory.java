@@ -16,6 +16,12 @@
 
 package com.google.gson.internal.bind;
 
+import java.io.IOException;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
@@ -31,11 +37,6 @@ import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
-import java.io.IOException;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Adapts maps to either JSON objects or JSON arrays.
@@ -124,44 +125,6 @@ import java.util.Map;
  * is registered.
  */
 public final class MapTypeAdapterFactory implements TypeAdapterFactory {
-	private final ConstructorConstructor constructorConstructor;
-	final boolean complexMapKeySerialization;
-
-	public MapTypeAdapterFactory(ConstructorConstructor constructorConstructor, boolean complexMapKeySerialization) {
-		this.constructorConstructor = constructorConstructor;
-		this.complexMapKeySerialization = complexMapKeySerialization;
-	}
-
-	@Override
-	public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> typeToken) {
-		Type type = typeToken.getType();
-
-		Class<? super T> rawType = typeToken.getRawType();
-		if (!Map.class.isAssignableFrom(rawType)) {
-			return null;
-		}
-
-		Class<?> rawTypeOfSrc = $Gson$Types.getRawType(type);
-		Type[] keyAndValueTypes = $Gson$Types.getMapKeyAndValueTypes(type, rawTypeOfSrc);
-		TypeAdapter<?> keyAdapter = getKeyAdapter(gson, keyAndValueTypes[0]);
-		TypeAdapter<?> valueAdapter = gson.getAdapter(TypeToken.get(keyAndValueTypes[1]));
-		ObjectConstructor<T> constructor = constructorConstructor.get(typeToken);
-
-		@SuppressWarnings({ "unchecked", "rawtypes" })
-		// we don't define a type parameter for the key or value types
-		TypeAdapter<T> result = new Adapter(gson, keyAndValueTypes[0], keyAdapter, keyAndValueTypes[1], valueAdapter,
-				constructor);
-		return result;
-	}
-
-	/**
-	 * Returns a type adapter that writes the value as a string.
-	 */
-	private TypeAdapter<?> getKeyAdapter(Gson context, Type keyType) {
-		return (keyType == boolean.class || keyType == Boolean.class) ? TypeAdapters.BOOLEAN_AS_STRING
-				: context.getAdapter(TypeToken.get(keyType));
-	}
-
 	private final class Adapter<K, V> extends TypeAdapter<Map<K, V>> {
 		private final TypeAdapter<K> keyTypeAdapter;
 		private final TypeAdapter<V> valueTypeAdapter;
@@ -172,6 +135,25 @@ public final class MapTypeAdapterFactory implements TypeAdapterFactory {
 			this.keyTypeAdapter = new TypeAdapterRuntimeTypeWrapper<K>(context, keyTypeAdapter, keyType);
 			this.valueTypeAdapter = new TypeAdapterRuntimeTypeWrapper<V>(context, valueTypeAdapter, valueType);
 			this.constructor = constructor;
+		}
+
+		private String keyToString(JsonElement keyElement) {
+			if (keyElement.isJsonPrimitive()) {
+				JsonPrimitive primitive = keyElement.getAsJsonPrimitive();
+				if (primitive.isNumber()) {
+					return String.valueOf(primitive.getAsNumber());
+				} else if (primitive.isBoolean()) {
+					return Boolean.toString(primitive.getAsBoolean());
+				} else if (primitive.isString()) {
+					return primitive.getAsString();
+				} else {
+					throw new AssertionError();
+				}
+			} else if (keyElement.isJsonNull()) {
+				return "null";
+			} else {
+				throw new AssertionError();
+			}
 		}
 
 		@Override
@@ -260,24 +242,44 @@ public final class MapTypeAdapterFactory implements TypeAdapterFactory {
 				out.endObject();
 			}
 		}
+	}
 
-		private String keyToString(JsonElement keyElement) {
-			if (keyElement.isJsonPrimitive()) {
-				JsonPrimitive primitive = keyElement.getAsJsonPrimitive();
-				if (primitive.isNumber()) {
-					return String.valueOf(primitive.getAsNumber());
-				} else if (primitive.isBoolean()) {
-					return Boolean.toString(primitive.getAsBoolean());
-				} else if (primitive.isString()) {
-					return primitive.getAsString();
-				} else {
-					throw new AssertionError();
-				}
-			} else if (keyElement.isJsonNull()) {
-				return "null";
-			} else {
-				throw new AssertionError();
-			}
+	private final ConstructorConstructor constructorConstructor;
+
+	final boolean complexMapKeySerialization;
+
+	public MapTypeAdapterFactory(ConstructorConstructor constructorConstructor, boolean complexMapKeySerialization) {
+		this.constructorConstructor = constructorConstructor;
+		this.complexMapKeySerialization = complexMapKeySerialization;
+	}
+
+	@Override
+	public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> typeToken) {
+		Type type = typeToken.getType();
+
+		Class<? super T> rawType = typeToken.getRawType();
+		if (!Map.class.isAssignableFrom(rawType)) {
+			return null;
 		}
+
+		Class<?> rawTypeOfSrc = $Gson$Types.getRawType(type);
+		Type[] keyAndValueTypes = $Gson$Types.getMapKeyAndValueTypes(type, rawTypeOfSrc);
+		TypeAdapter<?> keyAdapter = getKeyAdapter(gson, keyAndValueTypes[0]);
+		TypeAdapter<?> valueAdapter = gson.getAdapter(TypeToken.get(keyAndValueTypes[1]));
+		ObjectConstructor<T> constructor = constructorConstructor.get(typeToken);
+
+		@SuppressWarnings({ "unchecked", "rawtypes" })
+		// we don't define a type parameter for the key or value types
+		TypeAdapter<T> result = new Adapter(gson, keyAndValueTypes[0], keyAdapter, keyAndValueTypes[1], valueAdapter,
+				constructor);
+		return result;
+	}
+
+	/**
+	 * Returns a type adapter that writes the value as a string.
+	 */
+	private TypeAdapter<?> getKeyAdapter(Gson context, Type keyType) {
+		return (keyType == boolean.class || keyType == Boolean.class) ? TypeAdapters.BOOLEAN_AS_STRING
+				: context.getAdapter(TypeToken.get(keyType));
 	}
 }

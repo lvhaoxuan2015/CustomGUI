@@ -1,5 +1,7 @@
 package custom.gui.listener;
 
+import com.google.gson.JsonObject;
+
 import custom.gui.CustomGUI;
 import custom.gui.gui.Gui;
 import io.netty.buffer.Unpooled;
@@ -13,8 +15,11 @@ public class MainListener {
 	public void GuiOpenEvent(GuiOpenEvent e) {
 		if (e.getGui() instanceof Gui) {
 			Gui gui = (Gui) e.getGui();
+			JsonObject jo = new JsonObject();
+			jo.addProperty("Method", "OPENCUSTOMGUI");
+			jo.addProperty("GuiID", gui.guiID);
 			CustomGUI.net.sendToServer(new FMLProxyPacket(
-					new PacketBuffer(Unpooled.wrappedBuffer(("OPENCUSTOMGUI:" + gui.guiID).getBytes())),
+					new PacketBuffer(Unpooled.wrappedBuffer((jo.toString()).getBytes())),
 					CustomGUI.MODID));
 		}
 	}

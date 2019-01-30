@@ -61,22 +61,56 @@ import com.google.gson.stream.JsonWriter;
  * Type adapters for basic types.
  */
 public final class TypeAdapters {
-	private TypeAdapters() {
-		throw new UnsupportedOperationException();
+	private static final class EnumTypeAdapter<T extends Enum<T>> extends TypeAdapter<T> {
+		private final Map<String, T> nameToConstant = new HashMap<String, T>();
+		private final Map<T, String> constantToName = new HashMap<T, String>();
+
+		public EnumTypeAdapter(Class<T> classOfT) {
+			try {
+				for (T constant : classOfT.getEnumConstants()) {
+					String name = constant.name();
+					SerializedName annotation = classOfT.getField(name).getAnnotation(SerializedName.class);
+					if (annotation != null) {
+						name = annotation.value();
+						for (String alternate : annotation.alternate()) {
+							nameToConstant.put(alternate, constant);
+						}
+					}
+					nameToConstant.put(name, constant);
+					constantToName.put(constant, name);
+				}
+			} catch (NoSuchFieldException e) {
+				throw new AssertionError(e);
+			}
+		}
+
+		@Override
+		public T read(JsonReader in) throws IOException {
+			if (in.peek() == JsonToken.NULL) {
+				in.nextNull();
+				return null;
+			}
+			return nameToConstant.get(in.nextString());
+		}
+
+		@Override
+		public void write(JsonWriter out, T value) throws IOException {
+			out.value(value == null ? null : constantToName.get(value));
+		}
 	}
 
 	@SuppressWarnings("rawtypes")
 	public static final TypeAdapter<Class> CLASS = new TypeAdapter<Class>() {
 		@Override
-		public void write(JsonWriter out, Class value) throws IOException {
-			throw new UnsupportedOperationException("Attempted to serialize java.lang.Class: " + value.getName()
-					+ ". Forgot to register a type adapter?");
-		}
-
-		@Override
 		public Class read(JsonReader in) throws IOException {
 			throw new UnsupportedOperationException(
 					"Attempted to deserialize a java.lang.Class. Forgot to register a type adapter?");
+		}
+
+		@Override
+		public void write(JsonWriter out, Class value) throws IOException {
+			throw new UnsupportedOperationException("Attempted to serialize java.lang.Class: " + value.getName()
+					+ ". Forgot to register a type adapter?");
 		}
 	}.nullSafe();
 
@@ -805,44 +839,6 @@ public final class TypeAdapters {
 	public static final TypeAdapterFactory JSON_ELEMENT_FACTORY = newTypeHierarchyFactory(JsonElement.class,
 			JSON_ELEMENT);
 
-	private static final class EnumTypeAdapter<T extends Enum<T>> extends TypeAdapter<T> {
-		private final Map<String, T> nameToConstant = new HashMap<String, T>();
-		private final Map<T, String> constantToName = new HashMap<T, String>();
-
-		public EnumTypeAdapter(Class<T> classOfT) {
-			try {
-				for (T constant : classOfT.getEnumConstants()) {
-					String name = constant.name();
-					SerializedName annotation = classOfT.getField(name).getAnnotation(SerializedName.class);
-					if (annotation != null) {
-						name = annotation.value();
-						for (String alternate : annotation.alternate()) {
-							nameToConstant.put(alternate, constant);
-						}
-					}
-					nameToConstant.put(name, constant);
-					constantToName.put(constant, name);
-				}
-			} catch (NoSuchFieldException e) {
-				throw new AssertionError(e);
-			}
-		}
-
-		@Override
-		public T read(JsonReader in) throws IOException {
-			if (in.peek() == JsonToken.NULL) {
-				in.nextNull();
-				return null;
-			}
-			return nameToConstant.get(in.nextString());
-		}
-
-		@Override
-		public void write(JsonWriter out, T value) throws IOException {
-			out.value(value == null ? null : constantToName.get(value));
-		}
-	}
-
 	public static final TypeAdapterFactory ENUM_FACTORY = new TypeAdapterFactory() {
 		@SuppressWarnings({ "rawtypes", "unchecked" })
 		@Override
@@ -858,12 +854,19 @@ public final class TypeAdapters {
 		}
 	};
 
-	public static <TT> TypeAdapterFactory newFactory(final TypeToken<TT> type, final TypeAdapter<TT> typeAdapter) {
+	public static <TT> TypeAdapterFactory newFactory(final Class<TT> unboxed, final Class<TT> boxed,
+			final TypeAdapter<? super TT> typeAdapter) {
 		return new TypeAdapterFactory() {
 			@SuppressWarnings("unchecked") // we use a runtime check to make sure the 'T's equal
 			@Override
 			public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> typeToken) {
-				return typeToken.equals(type) ? (TypeAdapter<T>) typeAdapter : null;
+				Class<? super T> rawType = typeToken.getRawType();
+				return (rawType == unboxed || rawType == boxed) ? (TypeAdapter<T>) typeAdapter : null;
+			}
+
+			@Override
+			public String toString() {
+				return "Factory[type=" + boxed.getName() + "+" + unboxed.getName() + ",adapter=" + typeAdapter + "]";
 			}
 		};
 	}
@@ -883,19 +886,12 @@ public final class TypeAdapters {
 		};
 	}
 
-	public static <TT> TypeAdapterFactory newFactory(final Class<TT> unboxed, final Class<TT> boxed,
-			final TypeAdapter<? super TT> typeAdapter) {
+	public static <TT> TypeAdapterFactory newFactory(final TypeToken<TT> type, final TypeAdapter<TT> typeAdapter) {
 		return new TypeAdapterFactory() {
 			@SuppressWarnings("unchecked") // we use a runtime check to make sure the 'T's equal
 			@Override
 			public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> typeToken) {
-				Class<? super T> rawType = typeToken.getRawType();
-				return (rawType == unboxed || rawType == boxed) ? (TypeAdapter<T>) typeAdapter : null;
-			}
-
-			@Override
-			public String toString() {
-				return "Factory[type=" + boxed.getName() + "+" + unboxed.getName() + ",adapter=" + typeAdapter + "]";
+				return typeToken.equals(type) ? (TypeAdapter<T>) typeAdapter : null;
 			}
 		};
 	}
@@ -933,11 +929,6 @@ public final class TypeAdapters {
 				}
 				return (TypeAdapter<T2>) new TypeAdapter<T1>() {
 					@Override
-					public void write(JsonWriter out, T1 value) throws IOException {
-						typeAdapter.write(out, value);
-					}
-
-					@Override
 					public T1 read(JsonReader in) throws IOException {
 						T1 result = typeAdapter.read(in);
 						if (result != null && !requestedType.isInstance(result)) {
@@ -945,6 +936,11 @@ public final class TypeAdapters {
 									+ result.getClass().getName());
 						}
 						return result;
+					}
+
+					@Override
+					public void write(JsonWriter out, T1 value) throws IOException {
+						typeAdapter.write(out, value);
 					}
 				};
 			}
@@ -954,5 +950,9 @@ public final class TypeAdapters {
 				return "Factory[typeHierarchy=" + clazz.getName() + ",adapter=" + typeAdapter + "]";
 			}
 		};
+	}
+
+	private TypeAdapters() {
+		throw new UnsupportedOperationException();
 	}
 }

@@ -20,9 +20,9 @@ import com.google.gson.internal.LinkedTreeMap;
 import java.util.Map;
 import java.util.Set;
 
-public final class JsonObject extends JsonElement {
+public class JsonObject extends JsonElement {
 
-    private final LinkedTreeMap<String, JsonElement> members
+    public LinkedTreeMap<String, JsonElement> members
             = new LinkedTreeMap<>();
 
     @Override

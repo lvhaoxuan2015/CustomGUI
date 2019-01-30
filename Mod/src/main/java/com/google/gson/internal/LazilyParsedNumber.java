@@ -36,6 +36,33 @@ public final class LazilyParsedNumber extends Number {
 	}
 
 	@Override
+	public double doubleValue() {
+		return Double.parseDouble(value);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj instanceof LazilyParsedNumber) {
+			LazilyParsedNumber other = (LazilyParsedNumber) obj;
+			return value == other.value || value.equals(other.value);
+		}
+		return false;
+	}
+
+	@Override
+	public float floatValue() {
+		return Float.parseFloat(value);
+	}
+
+	@Override
+	public int hashCode() {
+		return value.hashCode();
+	}
+
+	@Override
 	public int intValue() {
 		try {
 			return Integer.parseInt(value);
@@ -58,16 +85,6 @@ public final class LazilyParsedNumber extends Number {
 	}
 
 	@Override
-	public float floatValue() {
-		return Float.parseFloat(value);
-	}
-
-	@Override
-	public double doubleValue() {
-		return Double.parseDouble(value);
-	}
-
-	@Override
 	public String toString() {
 		return value;
 	}
@@ -79,22 +96,5 @@ public final class LazilyParsedNumber extends Number {
 	 */
 	private Object writeReplace() throws ObjectStreamException {
 		return new BigDecimal(value);
-	}
-
-	@Override
-	public int hashCode() {
-		return value.hashCode();
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
-		if (obj instanceof LazilyParsedNumber) {
-			LazilyParsedNumber other = (LazilyParsedNumber) obj;
-			return value == other.value || value.equals(other.value);
-		}
-		return false;
 	}
 }

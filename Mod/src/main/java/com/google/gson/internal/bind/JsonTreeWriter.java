@@ -16,16 +16,17 @@
 
 package com.google.gson.internal.bind;
 
+import java.io.IOException;
+import java.io.Writer;
+import java.util.ArrayList;
+import java.util.List;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.stream.JsonWriter;
-import java.io.IOException;
-import java.io.Writer;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * This writer creates a JsonElement.
@@ -33,7 +34,7 @@ import java.util.List;
 public final class JsonTreeWriter extends JsonWriter {
 	private static final Writer UNWRITABLE_WRITER = new Writer() {
 		@Override
-		public void write(char[] buffer, int offset, int counter) {
+		public void close() throws IOException {
 			throw new AssertionError();
 		}
 
@@ -43,7 +44,7 @@ public final class JsonTreeWriter extends JsonWriter {
 		}
 
 		@Override
-		public void close() throws IOException {
+		public void write(char[] buffer, int offset, int counter) {
 			throw new AssertionError();
 		}
 	};
@@ -71,6 +72,60 @@ public final class JsonTreeWriter extends JsonWriter {
 		super(UNWRITABLE_WRITER);
 	}
 
+	@Override
+	public JsonWriter beginArray() throws IOException {
+		JsonArray array = new JsonArray();
+		put(array);
+		stack.add(array);
+		return this;
+	}
+
+	@Override
+	public JsonWriter beginObject() throws IOException {
+		JsonObject object = new JsonObject();
+		put(object);
+		stack.add(object);
+		return this;
+	}
+
+	@Override
+	public void close() throws IOException {
+		if (!stack.isEmpty()) {
+			throw new IOException("Incomplete document");
+		}
+		stack.add(SENTINEL_CLOSED);
+	}
+
+	@Override
+	public JsonWriter endArray() throws IOException {
+		if (stack.isEmpty() || pendingName != null) {
+			throw new IllegalStateException();
+		}
+		JsonElement element = peek();
+		if (element instanceof JsonArray) {
+			stack.remove(stack.size() - 1);
+			return this;
+		}
+		throw new IllegalStateException();
+	}
+
+	@Override
+	public JsonWriter endObject() throws IOException {
+		if (stack.isEmpty() || pendingName != null) {
+			throw new IllegalStateException();
+		}
+		JsonElement element = peek();
+		if (element instanceof JsonObject) {
+			stack.remove(stack.size() - 1);
+			return this;
+		}
+		throw new IllegalStateException();
+	}
+
+	@Override
+	public void flush() throws IOException {
+	}
+
 	/**
 	 * Returns the top level object produced by this writer.
 	 */
@@ -79,6 +134,25 @@ public final class JsonTreeWriter extends JsonWriter {
 			throw new IllegalStateException("Expected one JSON element but was " + stack);
 		}
 		return product;
+	}
+
+	@Override
+	public JsonWriter name(String name) throws IOException {
+		if (stack.isEmpty() || pendingName != null) {
+			throw new IllegalStateException();
+		}
+		JsonElement element = peek();
+		if (element instanceof JsonObject) {
+			pendingName = name;
+			return this;
+		}
+		throw new IllegalStateException();
+	}
+
+	@Override
+	public JsonWriter nullValue() throws IOException {
+		put(JsonNull.INSTANCE);
+		return this;
 	}
 
 	private JsonElement peek() {
@@ -102,76 +176,6 @@ public final class JsonTreeWriter extends JsonWriter {
 				throw new IllegalStateException();
 			}
 		}
-	}
-
-	@Override
-	public JsonWriter beginArray() throws IOException {
-		JsonArray array = new JsonArray();
-		put(array);
-		stack.add(array);
-		return this;
-	}
-
-	@Override
-	public JsonWriter endArray() throws IOException {
-		if (stack.isEmpty() || pendingName != null) {
-			throw new IllegalStateException();
-		}
-		JsonElement element = peek();
-		if (element instanceof JsonArray) {
-			stack.remove(stack.size() - 1);
-			return this;
-		}
-		throw new IllegalStateException();
-	}
-
-	@Override
-	public JsonWriter beginObject() throws IOException {
-		JsonObject object = new JsonObject();
-		put(object);
-		stack.add(object);
-		return this;
-	}
-
-	@Override
-	public JsonWriter endObject() throws IOException {
-		if (stack.isEmpty() || pendingName != null) {
-			throw new IllegalStateException();
-		}
-		JsonElement element = peek();
-		if (element instanceof JsonObject) {
-			stack.remove(stack.size() - 1);
-			return this;
-		}
-		throw new IllegalStateException();
-	}
-
-	@Override
-	public JsonWriter name(String name) throws IOException {
-		if (stack.isEmpty() || pendingName != null) {
-			throw new IllegalStateException();
-		}
-		JsonElement element = peek();
-		if (element instanceof JsonObject) {
-			pendingName = name;
-			return this;
-		}
-		throw new IllegalStateException();
-	}
-
-	@Override
-	public JsonWriter value(String value) throws IOException {
-		if (value == null) {
-			return nullValue();
-		}
-		put(new JsonPrimitive(value));
-		return this;
-	}
-
-	@Override
-	public JsonWriter nullValue() throws IOException {
-		put(JsonNull.INSTANCE);
-		return this;
 	}
 
 	@Override
@@ -222,14 +226,11 @@ public final class JsonTreeWriter extends JsonWriter {
 	}
 
 	@Override
-	public void flush() throws IOException {
-	}
-
-	@Override
-	public void close() throws IOException {
-		if (!stack.isEmpty()) {
-			throw new IOException("Incomplete document");
+	public JsonWriter value(String value) throws IOException {
+		if (value == null) {
+			return nullValue();
 		}
-		stack.add(SENTINEL_CLOSED);
+		put(new JsonPrimitive(value));
+		return this;
 	}
 }

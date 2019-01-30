@@ -1,21 +1,19 @@
 package custom.gui.gui.object;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
+
 import custom.gui.gui.Gui;
 import custom.gui.gui.GuiUtil;
-import custom.gui.networkgui.NetWorkGuiButton;
 import net.minecraft.client.gui.GuiButton;
 
-public class EGuiButton extends EGuiObject {
+public class EGuiButton implements EGuiObject {
 
 	String str;
 	int x, y, width, height, id;
 
-	public EGuiButton(String json) {
-		Gson gson = new GsonBuilder().create();
-		NetWorkGuiButton in = gson.fromJson(json, NetWorkGuiButton.class);
-		GuiUtil.writeInObject(this, in);
+	public EGuiButton(JsonObject obj) {
+		GuiUtil.writeInObject(new Gson().fromJson(obj, this.getClass()), this);
 	}
 
 	@Override

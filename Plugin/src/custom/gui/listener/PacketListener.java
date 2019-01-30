@@ -1,26 +1,33 @@
 package custom.gui.listener;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import custom.gui.api.API;
 import custom.gui.event.CustomGuiButtonClickEvent;
-import custom.gui.event.CustomGuiFieldTextGetEvent;
 import custom.gui.event.CustomGuiOpenEvent;
+import java.util.HashMap;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.messaging.PluginMessageListener;
 import org.bukkit.Bukkit;
 
 public class PacketListener implements PluginMessageListener {
-
+    
     @Override
     public void onPluginMessageReceived(String string, Player player, byte[] bytes) {
         String str = new String(bytes);
-        if (str.contains("OPENCUSTOMGUI:")) {
-            Bukkit.getPluginManager().callEvent(new CustomGuiOpenEvent(Integer.parseInt(str.split(":")[1]), player));
-        } else if (str.contains("CLICKCUSTOMGUIBUTTON:")) {
-            Bukkit.getPluginManager().callEvent(new CustomGuiButtonClickEvent(Integer.parseInt(str.split(":")[1].split(";")[0]), Integer.parseInt(str.split(":")[1].split(";")[1]), player));
-        } else if (str.contains("CHECKMOD")) {
-            MainListener.map.put(player.getName(), true);
-        } else if (str.contains("GETFIELD:")) {
-            Bukkit.getPluginManager().callEvent(new CustomGuiFieldTextGetEvent(str.split(":")[1].split(";")[0], Integer.parseInt(str.split(":")[1].split(";")[1]), player));
+        Gson gson = new Gson();
+        JsonObject obj = gson.fromJson(str, JsonObject.class);
+        String method = obj.get("Method").getAsString();
+        if (method.equalsIgnoreCase("OPENCUSTOMGUI")) {
+            Bukkit.getPluginManager().callEvent(new CustomGuiOpenEvent(obj.get("GuiID").getAsInt(), player));
+        } else if (method.equalsIgnoreCase("CLICKCUSTOMGUIBUTTON")) {
+            Bukkit.getPluginManager().callEvent(new CustomGuiButtonClickEvent(obj.get("ButtonID").getAsInt(), obj.get("GuiID").getAsInt(), player));
+        } else if (method.equalsIgnoreCase("CHANGEVALUE")) {
+            if (API.variablesMap.get(player.getName()) == null) {
+                API.variablesMap.put(player.getName(), new HashMap<>());
+            }
+            API.variablesMap.get(player.getName()).put(obj.get("ID").getAsInt(), obj.get("Value").getAsString());
         }
     }
-
+    
 }

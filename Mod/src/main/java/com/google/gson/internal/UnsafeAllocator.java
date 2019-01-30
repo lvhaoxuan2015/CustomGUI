@@ -29,7 +29,23 @@ import java.lang.reflect.Modifier;
  * @author Jesse Wilson
  */
 public abstract class UnsafeAllocator {
-	public abstract <T> T newInstance(Class<T> c) throws Exception;
+	/**
+	 * Check if the class can be instantiated by unsafe allocator. If the instance
+	 * has interface or abstract modifiers throw an
+	 * {@link java.lang.UnsupportedOperationException}
+	 * 
+	 * @param c
+	 *            instance of the class to be checked
+	 */
+	static void assertInstantiable(Class<?> c) {
+		int modifiers = c.getModifiers();
+		if (Modifier.isInterface(modifiers)) {
+			throw new UnsupportedOperationException("Interface can't be instantiated! Interface name: " + c.getName());
+		}
+		if (Modifier.isAbstract(modifiers)) {
+			throw new UnsupportedOperationException("Abstract class can't be instantiated! Class name: " + c.getName());
+		}
+	}
 
 	public static UnsafeAllocator create() {
 		// try JVM
@@ -105,21 +121,5 @@ public abstract class UnsafeAllocator {
 		};
 	}
 
-	/**
-	 * Check if the class can be instantiated by unsafe allocator. If the instance
-	 * has interface or abstract modifiers throw an
-	 * {@link java.lang.UnsupportedOperationException}
-	 * 
-	 * @param c
-	 *            instance of the class to be checked
-	 */
-	static void assertInstantiable(Class<?> c) {
-		int modifiers = c.getModifiers();
-		if (Modifier.isInterface(modifiers)) {
-			throw new UnsupportedOperationException("Interface can't be instantiated! Interface name: " + c.getName());
-		}
-		if (Modifier.isAbstract(modifiers)) {
-			throw new UnsupportedOperationException("Abstract class can't be instantiated! Class name: " + c.getName());
-		}
-	}
+	public abstract <T> T newInstance(Class<T> c) throws Exception;
 }

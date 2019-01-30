@@ -18,7 +18,7 @@ package com.google.gson;
 /**
  * This exception is raised when Gson was unable to read an input stream or
  * write to one.
- * 
+ *
  * @author Inderjeet Singh
  * @author Joel Leitch
  */

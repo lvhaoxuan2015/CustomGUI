@@ -2,6 +2,7 @@ package custom.gui;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+
 import custom.gui.listener.MainListener;
 import custom.gui.listener.PacketListener;
 import net.minecraftforge.common.MinecraftForge;
@@ -21,13 +22,13 @@ public class CustomGUI {
 	public static MainListener ml = new MainListener();
 
 	@EventHandler
+	public void init(FMLInitializationEvent event) throws FileNotFoundException, IOException {
+	}
+
+	@EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
 		MinecraftForge.EVENT_BUS.register(pl);
 		MinecraftForge.EVENT_BUS.register(ml);
 		(net = NetworkRegistry.INSTANCE.newEventDrivenChannel(MODID)).register(pl);
-	}
-
-	@EventHandler
-	public void init(FMLInitializationEvent event) throws FileNotFoundException, IOException {
 	}
 }

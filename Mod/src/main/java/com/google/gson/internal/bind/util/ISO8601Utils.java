@@ -2,16 +2,20 @@ package com.google.gson.internal.bind.util;
 
 import java.text.ParseException;
 import java.text.ParsePosition;
-import java.util.*;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.Locale;
+import java.util.TimeZone;
 
 /**
  * Utilities methods for manipulating dates in iso8601 format. This is much much
  * faster and GC friendly than using SimpleDateFormat so highly suitable if you
  * (un)serialize lots of date objects.
- * 
+ *
  * Supported parse format:
  * [yyyy-MM-dd|yyyyMMdd][T(hh:mm[:ss[.sss]]|hhmm[ss[.sss]])]?[Z|[+-]hh[:]mm]]
- * 
+ *
  * @see <a href="http://www.w3.org/TR/NOTE-datetime">this specification</a>
  */
 // Date parsing code from Jackson databind ISO8601Utils.java
@@ -34,6 +38,21 @@ public class ISO8601Utils {
 	 * /********************************************************** /* Formatting
 	 * /**********************************************************
 	 */
+
+	/**
+	 * Check if the expected character exist at the given offset in the value.
+	 * 
+	 * @param value
+	 *            the string to check at the specified offset
+	 * @param offset
+	 *            the offset to look for the expected character
+	 * @param expected
+	 *            the expected character
+	 * @return true if the expected character exist at the given offset
+	 */
+	private static boolean checkOffset(String value, int offset, char expected) {
+		return (offset < value.length()) && (value.charAt(offset) == expected);
+	}
 
 	/**
 	 * Format a date into 'yyyy-MM-ddThh:mm:ssZ' (default timezone, no milliseconds
@@ -59,6 +78,11 @@ public class ISO8601Utils {
 	public static String format(Date date, boolean millis) {
 		return format(date, millis, TIMEZONE_UTC);
 	}
+
+	/*
+	 * /********************************************************** /* Parsing
+	 * /**********************************************************
+	 */
 
 	/**
 	 * Format date into yyyy-MM-ddThh:mm:ss[.sss][Z|[+-]hh:mm]
@@ -112,10 +136,37 @@ public class ISO8601Utils {
 		return formatted.toString();
 	}
 
-	/*
-	 * /********************************************************** /* Parsing
-	 * /**********************************************************
+	/**
+	 * Returns the index of the first character in the string that is not a digit,
+	 * starting at offset.
 	 */
+	private static int indexOfNonDigit(String string, int offset) {
+		for (int i = offset; i < string.length(); i++) {
+			char c = string.charAt(i);
+			if (c < '0' || c > '9') {
+				return i;
+			}
+		}
+		return string.length();
+	}
+
+	/**
+	 * Zero pad a number to a specified length
+	 * 
+	 * @param buffer
+	 *            buffer to use for padding
+	 * @param value
+	 *            the integer value to pad if necessary.
+	 * @param length
+	 *            the length of the string we should zero pad
+	 */
+	private static void padInt(StringBuilder buffer, int value, int length) {
+		String strValue = Integer.toString(value);
+		for (int i = length - strValue.length(); i > 0; i--) {
+			buffer.append('0');
+		}
+		buffer.append(strValue);
+	}
 
 	/**
 	 * Parse a date from ISO-8601 formatted string. It expects a format
@@ -182,8 +233,9 @@ public class ISO8601Utils {
 					char c = date.charAt(offset);
 					if (c != 'Z' && c != '+' && c != '-') {
 						seconds = parseInt(date, offset, offset += 2);
-						if (seconds > 59 && seconds < 63)
+						if (seconds > 59 && seconds < 63) {
 							seconds = 59; // truncate up to 3 leap seconds
+						}
 						// milliseconds can be optional in the format
 						if (checkOffset(date, offset, '.')) {
 							offset += 1;
@@ -289,21 +341,6 @@ public class ISO8601Utils {
 	}
 
 	/**
-	 * Check if the expected character exist at the given offset in the value.
-	 * 
-	 * @param value
-	 *            the string to check at the specified offset
-	 * @param offset
-	 *            the offset to look for the expected character
-	 * @param expected
-	 *            the expected character
-	 * @return true if the expected character exist at the given offset
-	 */
-	private static boolean checkOffset(String value, int offset, char expected) {
-		return (offset < value.length()) && (value.charAt(offset) == expected);
-	}
-
-	/**
 	 * Parse an integer located between 2 given offsets in a string
 	 * 
 	 * @param value
@@ -341,37 +378,6 @@ public class ISO8601Utils {
 			result -= digit;
 		}
 		return -result;
-	}
-
-	/**
-	 * Zero pad a number to a specified length
-	 * 
-	 * @param buffer
-	 *            buffer to use for padding
-	 * @param value
-	 *            the integer value to pad if necessary.
-	 * @param length
-	 *            the length of the string we should zero pad
-	 */
-	private static void padInt(StringBuilder buffer, int value, int length) {
-		String strValue = Integer.toString(value);
-		for (int i = length - strValue.length(); i > 0; i--) {
-			buffer.append('0');
-		}
-		buffer.append(strValue);
-	}
-
-	/**
-	 * Returns the index of the first character in the string that is not a digit,
-	 * starting at offset.
-	 */
-	private static int indexOfNonDigit(String string, int offset) {
-		for (int i = offset; i < string.length(); i++) {
-			char c = string.charAt(i);
-			if (c < '0' || c > '9')
-				return i;
-		}
-		return string.length();
 	}
 
 }

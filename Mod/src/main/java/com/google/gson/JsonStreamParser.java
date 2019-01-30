@@ -30,12 +30,12 @@ import com.google.gson.stream.MalformedJsonException;
 /**
  * A streaming parser that allows reading of multiple {@link JsonElement}s from
  * the specified reader asynchronously.
- * 
+ *
  * <p>
  * This class is conditionally thread-safe (see Item 70, Effective Java second
  * edition). To properly use this class across multiple threads, you will need
  * to add some external synchronization. For example:
- * 
+ *
  * <pre>
  * JsonStreamParser parser = new JsonStreamParser("['first'] {'second':10} 'third'");
  * JsonElement element;
@@ -55,15 +55,6 @@ public final class JsonStreamParser implements Iterator<JsonElement> {
 	private final Object lock;
 
 	/**
-	 * @param json
-	 *            The string containing JSON elements concatenated to each other.
-	 * @since 1.4
-	 */
-	public JsonStreamParser(String json) {
-		this(new StringReader(json));
-	}
-
-	/**
 	 * @param reader
 	 *            The data stream containing JSON elements concatenated to each
 	 *            other.
@@ -73,6 +64,36 @@ public final class JsonStreamParser implements Iterator<JsonElement> {
 		parser = new JsonReader(reader);
 		parser.setLenient(true);
 		lock = new Object();
+	}
+
+	/**
+	 * @param json
+	 *            The string containing JSON elements concatenated to each other.
+	 * @since 1.4
+	 */
+	public JsonStreamParser(String json) {
+		this(new StringReader(json));
+	}
+
+	/**
+	 * Returns true if a {@link JsonElement} is available on the input for
+	 * consumption
+	 * 
+	 * @return true if a {@link JsonElement} is available on the input, false
+	 *         otherwise
+	 * @since 1.4
+	 */
+	@Override
+	public boolean hasNext() {
+		synchronized (lock) {
+			try {
+				return parser.peek() != JsonToken.END_DOCUMENT;
+			} catch (MalformedJsonException e) {
+				throw new JsonSyntaxException(e);
+			} catch (IOException e) {
+				throw new JsonIOException(e);
+			}
+		}
 	}
 
 	/**
@@ -99,27 +120,6 @@ public final class JsonStreamParser implements Iterator<JsonElement> {
 			throw new JsonParseException("Failed parsing JSON source to Json", e);
 		} catch (JsonParseException e) {
 			throw e.getCause() instanceof EOFException ? new NoSuchElementException() : e;
-		}
-	}
-
-	/**
-	 * Returns true if a {@link JsonElement} is available on the input for
-	 * consumption
-	 * 
-	 * @return true if a {@link JsonElement} is available on the input, false
-	 *         otherwise
-	 * @since 1.4
-	 */
-	@Override
-	public boolean hasNext() {
-		synchronized (lock) {
-			try {
-				return parser.peek() != JsonToken.END_DOCUMENT;
-			} catch (MalformedJsonException e) {
-				throw new JsonSyntaxException(e);
-			} catch (IOException e) {
-				throw new JsonIOException(e);
-			}
 		}
 	}
 
