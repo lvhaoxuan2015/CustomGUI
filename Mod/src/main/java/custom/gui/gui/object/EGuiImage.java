@@ -28,7 +28,7 @@ public class EGuiImage implements EGuiObject {
 		}
 		GL11.glBindTexture(GL11.GL_TEXTURE_2D, textureID);
 		GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-		net.minecraft.client.gui.Gui.drawModalRectWithCustomSizedTexture(x, y, 0, 0, width / 2, height / 2, width / 2,
+		net.minecraft.client.gui.Gui.drawModalRectWithCustomSizedTexture(x, y, textureX, textureY, width / 2, height / 2, width / 2,
 				height / 2);
 	}
 
