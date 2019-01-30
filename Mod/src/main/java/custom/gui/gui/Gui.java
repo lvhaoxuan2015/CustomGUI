@@ -40,9 +40,7 @@ public class Gui extends GuiScreen {
 		jo.addProperty("GuiID", guiID);
 		jo.addProperty("ButtonID", button.id);
 		CustomGUI.net.sendToServer(new FMLProxyPacket(
-				new PacketBuffer(
-						Unpooled.wrappedBuffer((jo.toString()).getBytes())),
-				CustomGUI.MODID));
+				new PacketBuffer(Unpooled.wrappedBuffer((jo.toString()).getBytes())), CustomGUI.MODID));
 	}
 
 	@Override

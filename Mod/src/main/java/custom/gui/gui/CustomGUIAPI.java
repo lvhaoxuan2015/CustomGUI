@@ -18,8 +18,7 @@ public class CustomGUIAPI {
 		jo.addProperty("ID", id);
 		jo.addProperty("Value", value);
 		CustomGUI.net.sendToServer(new FMLProxyPacket(
-				new PacketBuffer(Unpooled.wrappedBuffer((jo.toString()).getBytes())),
-				CustomGUI.MODID));
+				new PacketBuffer(Unpooled.wrappedBuffer((jo.toString()).getBytes())), CustomGUI.MODID));
 	}
 
 	public static void openGUI(List<EGuiObject> list, int guiID) {

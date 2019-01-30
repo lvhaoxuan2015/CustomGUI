@@ -19,8 +19,7 @@ public class MainListener {
 			jo.addProperty("Method", "OPENCUSTOMGUI");
 			jo.addProperty("GuiID", gui.guiID);
 			CustomGUI.net.sendToServer(new FMLProxyPacket(
-					new PacketBuffer(Unpooled.wrappedBuffer((jo.toString()).getBytes())),
-					CustomGUI.MODID));
+					new PacketBuffer(Unpooled.wrappedBuffer((jo.toString()).getBytes())), CustomGUI.MODID));
 		}
 	}
 }
