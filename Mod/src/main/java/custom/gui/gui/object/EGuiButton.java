@@ -9,19 +9,19 @@ import net.minecraft.client.gui.GuiButton;
 
 public class EGuiButton implements EGuiObject {
 
-	String str;
-	int x, y, width, height, id;
+    String str;
+    int x, y, width, height, id;
 
-	public EGuiButton(JsonObject obj) {
-		GuiUtil.writeInObject(new Gson().fromJson(obj, this.getClass()), this);
-	}
+    public EGuiButton(JsonObject obj) {
+        GuiUtil.writeInObject(new Gson().fromJson(obj, this.getClass()), this);
+    }
 
-	@Override
-	public void draw(Gui gui) {
-	}
+    @Override
+    public void draw(Gui gui) {
+    }
 
-	@Override
-	public void init(Gui gui) {
-		gui.EbuttonList.add(new GuiButton(id, x, y, width, height, str));
-	}
+    @Override
+    public void init(Gui gui) {
+        gui.EbuttonList.add(new GuiButton(id, x, y, width, height, str));
+    }
 }

@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import custom.gui.api.API;
 import custom.gui.event.CustomGuiButtonClickEvent;
+import custom.gui.event.CustomGuiCloseEvent;
 import custom.gui.event.CustomGuiOpenEvent;
 import java.util.HashMap;
 import org.bukkit.entity.Player;
@@ -11,7 +12,7 @@ import org.bukkit.plugin.messaging.PluginMessageListener;
 import org.bukkit.Bukkit;
 
 public class PacketListener implements PluginMessageListener {
-    
+
     @Override
     public void onPluginMessageReceived(String string, Player player, byte[] bytes) {
         String str = new String(bytes);
@@ -27,7 +28,9 @@ public class PacketListener implements PluginMessageListener {
                 API.variablesMap.put(player.getName(), new HashMap<>());
             }
             API.variablesMap.get(player.getName()).put(obj.get("ID").getAsInt(), obj.get("Value").getAsString());
+        } else if (method.equalsIgnoreCase("CLOSEGUI")) {
+            Bukkit.getPluginManager().callEvent(new CustomGuiCloseEvent(obj.get("GuiID").getAsInt(), player));
         }
     }
-    
+
 }

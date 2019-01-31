@@ -15,20 +15,21 @@ import net.minecraftforge.fml.common.network.NetworkRegistry;
 
 @Mod(modid = CustomGUI.MODID, version = CustomGUI.VERSION)
 public class CustomGUI {
-	public static final String MODID = "customgui";
-	public static final String VERSION = "1.0";
-	public static FMLEventChannel net;
-	public static PacketListener pl = new PacketListener();
-	public static MainListener ml = new MainListener();
 
-	@EventHandler
-	public void init(FMLInitializationEvent event) throws FileNotFoundException, IOException {
-	}
+    public static final String MODID = "customgui";
+    public static final String VERSION = "1.0";
+    public static FMLEventChannel net;
+    public static PacketListener pl = new PacketListener();
+    public static MainListener ml = new MainListener();
 
-	@EventHandler
-	public void preInit(FMLPreInitializationEvent event) {
-		MinecraftForge.EVENT_BUS.register(pl);
-		MinecraftForge.EVENT_BUS.register(ml);
-		(net = NetworkRegistry.INSTANCE.newEventDrivenChannel(MODID)).register(pl);
-	}
+    @EventHandler
+    public void init(FMLInitializationEvent event) throws FileNotFoundException, IOException {
+    }
+
+    @EventHandler
+    public void preInit(FMLPreInitializationEvent event) {
+        MinecraftForge.EVENT_BUS.register(pl);
+        MinecraftForge.EVENT_BUS.register(ml);
+        (net = NetworkRegistry.INSTANCE.newEventDrivenChannel(MODID)).register(pl);
+    }
 }

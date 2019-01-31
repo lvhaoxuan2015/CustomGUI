@@ -11,15 +11,16 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.network.internal.FMLProxyPacket;
 
 public class MainListener {
-	@SubscribeEvent
-	public void GuiOpenEvent(GuiOpenEvent e) {
-		if (e.getGui() instanceof Gui) {
-			Gui gui = (Gui) e.getGui();
-			JsonObject jo = new JsonObject();
-			jo.addProperty("Method", "OPENCUSTOMGUI");
-			jo.addProperty("GuiID", gui.guiID);
-			CustomGUI.net.sendToServer(new FMLProxyPacket(
-					new PacketBuffer(Unpooled.wrappedBuffer((jo.toString()).getBytes())), CustomGUI.MODID));
-		}
-	}
+
+    @SubscribeEvent
+    public void GuiOpenEvent(GuiOpenEvent e) {
+        if (e.getGui() instanceof Gui) {
+            Gui gui = (Gui) e.getGui();
+            JsonObject jo = new JsonObject();
+            jo.addProperty("Method", "OPENCUSTOMGUI");
+            jo.addProperty("GuiID", gui.guiID);
+            CustomGUI.net.sendToServer(new FMLProxyPacket(
+                    new PacketBuffer(Unpooled.wrappedBuffer((jo.toString()).getBytes())), CustomGUI.MODID));
+        }
+    }
 }
