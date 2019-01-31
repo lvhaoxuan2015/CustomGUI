@@ -17,7 +17,7 @@ public class API {
         jo.addProperty("Method", "OPENGUI");
         new PacketPlayOutCustomPayload(p, jo.toString()).sendTo();
     }
-    
+
     public static void closeNowGui(Player p) {
         JsonObject jo = new JsonObject();
         jo.addProperty("Method", "CLOSENOWGUI");

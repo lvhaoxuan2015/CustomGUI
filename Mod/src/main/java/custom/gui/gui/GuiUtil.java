@@ -31,6 +31,10 @@ public class GuiUtil {
             return new EGuiUrlsGif(jsonObj);
         } else if (jsonObj.get("type").getAsString().equalsIgnoreCase("GuiUrlGif")) {
             return new EGuiUrlGif(jsonObj);
+        } else if (jsonObj.get("type").getAsString().equalsIgnoreCase("GuiCustomButton")) {
+            return new EGuiCustomButton(jsonObj);
+        } else if (jsonObj.get("type").getAsString().equalsIgnoreCase("GuiCustomField")) {
+            return new EGuiCustomField(jsonObj);
         }
         return null;
     }

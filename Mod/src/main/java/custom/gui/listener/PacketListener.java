@@ -9,6 +9,8 @@ import com.google.gson.JsonObject;
 import custom.gui.CustomGUI;
 
 import custom.gui.gui.CustomGUIAPI;
+import custom.gui.gui.DownloadGifThread;
+import custom.gui.gui.DownloadImageThread;
 import custom.gui.gui.Gui;
 import custom.gui.gui.GuiUtil;
 import custom.gui.gui.object.EGuiObject;
@@ -46,6 +48,17 @@ public class PacketListener {
                 CustomGUI.net.sendToServer(new FMLProxyPacket(
                         new PacketBuffer(Unpooled.wrappedBuffer((jo.toString()).getBytes())), CustomGUI.MODID));
                 gui.close();
+            }
+        } else if (method.equalsIgnoreCase("DOWNLOADTEXTURE")) {
+            List<String> imageUrls = gson.fromJson(obj.get("ImageUrls").getAsString(), new TypeToken<List<String>>() {
+            }.getType());
+            List<String> gifUrls = gson.fromJson(obj.get("GifUrls").getAsString(), new TypeToken<List<String>>() {
+            }.getType());
+            for (String url : imageUrls) {
+                new DownloadImageThread(url).start();
+            }
+            for (String url : gifUrls) {
+                new DownloadGifThread(url).start();
             }
         }
     }

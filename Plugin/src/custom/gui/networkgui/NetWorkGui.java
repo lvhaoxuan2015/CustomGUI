@@ -1,7 +1,6 @@
 package custom.gui.networkgui;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,7 +14,7 @@ public class NetWorkGui {
     }
 
     public String objListToJson() {
-        Gson gson = new GsonBuilder().create();
+        Gson gson = new Gson();
         return gson.toJson(objList);
     }
 

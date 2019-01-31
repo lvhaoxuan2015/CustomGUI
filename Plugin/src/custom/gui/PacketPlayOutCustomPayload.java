@@ -5,8 +5,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -30,7 +28,6 @@ public class PacketPlayOutCustomPayload {
             playerConnection = getField(PackageType.MINECRAFT_SERVER.getClass("EntityPlayer"), false, "playerConnection");
             sendPacket = getMethod(playerConnection.getType(), "sendPacket");
         } catch (ClassNotFoundException | NoSuchMethodException | NoSuchFieldException | SecurityException ex) {
-            Logger.getLogger(PacketPlayOutCustomPayload.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -43,7 +40,6 @@ public class PacketPlayOutCustomPayload {
             setValue(packet, packet.getClass(), true, "a", str);
             setValue(packet, packet.getClass(), true, "b", pds);
         } catch (NullPointerException | IllegalAccessException | IllegalArgumentException | InstantiationException | SecurityException | InvocationTargetException | NoSuchFieldException e) {
-            Logger.getLogger(PacketPlayOutCustomPayload.class.getName()).log(Level.SEVERE, null, e);
         }
     }
 
@@ -58,12 +54,10 @@ public class PacketPlayOutCustomPayload {
             Object obj = getPacketDataSerializerConstructor(pds).newInstance(Unpooled.wrappedBuffer(msg.getBytes()));
             initializePacket("customgui", obj);
         } catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-            Logger.getLogger(PacketPlayOutCustomPayload.class.getName()).log(Level.SEVERE, null, ex);
         }
         try {
             sendPacket.invoke(playerConnection.get(getHandle.invoke(p)), packet);
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-            Logger.getLogger(PacketPlayOutCustomPayload.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 

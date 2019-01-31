@@ -34,7 +34,7 @@ public class EGuiUrlsGif implements EGuiObject {
             TextureUtil.uploadTextureImage(textureIDs[frameNum], TextureManager.getBufferedImage(paths[frameNum]));
             isuploadTextureImage[frameNum] = true;
         }
-        GL11.glBindTexture(GL11.GL_TEXTURE_2D, textureIDs[frameNum]);
+        GlStateManager.bindTexture(textureIDs[frameNum]);
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
         net.minecraft.client.gui.Gui.drawModalRectWithCustomSizedTexture(x, y, textureX, textureY, width, height, width,
                 height);
