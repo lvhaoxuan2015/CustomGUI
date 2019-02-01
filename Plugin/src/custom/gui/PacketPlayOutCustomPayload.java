@@ -8,6 +8,9 @@ import java.lang.reflect.Method;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
+/**
+ * ·¢°ü»ú
+ */
 public class PacketPlayOutCustomPayload {
 
     private static Constructor<?> packetConstructor;

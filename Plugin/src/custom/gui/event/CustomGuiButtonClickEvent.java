@@ -4,6 +4,9 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.event.Event;
 import org.bukkit.entity.Player;
 
+/**
+ * 当玩家按下按钮时触发这个事件
+ */
 public class CustomGuiButtonClickEvent extends Event {
 
     HandlerList hl = new HandlerList();

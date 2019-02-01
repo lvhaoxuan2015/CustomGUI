@@ -8,12 +8,12 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import custom.gui.CustomGUI;
 
-import custom.gui.gui.CustomGUIAPI;
-import custom.gui.gui.DownloadGifThread;
-import custom.gui.gui.DownloadImageThread;
-import custom.gui.gui.Gui;
-import custom.gui.gui.GuiUtil;
-import custom.gui.gui.object.EGuiObject;
+import custom.gui.api.CustomGUIAPI;
+import custom.gui.util.DownloadGifThread;
+import custom.gui.util.DownloadImageThread;
+import custom.gui.Gui;
+import custom.gui.util.GuiUtil;
+import custom.gui.object.EGuiObject;
 import io.netty.buffer.Unpooled;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.PacketBuffer;
@@ -35,10 +35,11 @@ public class PacketListener {
         String method = obj.get("Method").getAsString();
         if (method.equalsIgnoreCase("OPENGUI")) {
             int guiID = obj.get("GuiID").getAsInt();
+            boolean useDefaultBackground = obj.get("UseDefaultBackground").getAsBoolean();
             List<JsonObject> list = gson.fromJson(obj.get("Gui").getAsString(), new TypeToken<List<JsonObject>>() {
             }.getType());
             List<EGuiObject> eList = GuiUtil.backToObject(list);
-            CustomGUIAPI.openGUI(eList, guiID);
+            CustomGUIAPI.openGUI(eList, guiID, useDefaultBackground);
         } else if (method.equalsIgnoreCase("CLOSENOWGUI")) {
             if (Minecraft.getMinecraft().currentScreen instanceof Gui) {
                 Gui gui = (Gui) Minecraft.getMinecraft().currentScreen;

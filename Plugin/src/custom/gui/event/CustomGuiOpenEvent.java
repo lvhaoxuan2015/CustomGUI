@@ -4,6 +4,9 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.event.Event;
 import org.bukkit.entity.Player;
 
+/**
+ * 当玩家打开自定义GUI时触发这个事件
+ */
 public class CustomGuiOpenEvent extends Event {
 
     HandlerList hl = new HandlerList();

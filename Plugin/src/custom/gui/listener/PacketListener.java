@@ -27,7 +27,7 @@ public class PacketListener implements PluginMessageListener {
             if (API.variablesMap.get(player.getName()) == null) {
                 API.variablesMap.put(player.getName(), new HashMap<>());
             }
-            API.variablesMap.get(player.getName()).put(obj.get("ID").getAsInt(), obj.get("Value").getAsString());
+            API.variablesMap.get(player.getName()).put(obj.get("ID").getAsString(), obj.get("Value").getAsString());
         } else if (method.equalsIgnoreCase("CLOSEGUI")) {
             Bukkit.getPluginManager().callEvent(new CustomGuiCloseEvent(obj.get("GuiID").getAsInt(), player));
         }
