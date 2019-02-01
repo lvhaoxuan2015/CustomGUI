@@ -6,9 +6,10 @@ import java.util.List;
 
 import com.google.gson.JsonObject;
 
-import custom.gui.object.EGuiObject;
-import custom.gui.mcobject.GuiCustomField;
+import custom.gui.object.*;
+import custom.gui.mcobject.*;
 import custom.gui.api.CustomGUIAPI;
+import custom.gui.object.EGuiCustomButton;
 import io.netty.buffer.Unpooled;
 import java.util.HashMap;
 import net.minecraft.client.Minecraft;
@@ -26,7 +27,7 @@ public class Gui extends GuiScreen {
 
     public GuiScreen old;
     public List<EGuiObject> objList = new ArrayList<>();
-    public List<GuiButton> EbuttonList = new ArrayList<>();
+    public List<GuiButton> GuiButtonList = new ArrayList<>();
     public List<GuiTextField> GuiFieldList = new ArrayList<>();
     public List<GuiCustomField> GuiCustomFieldList = new ArrayList<>();
     public int guiID, oldWidth, oldHeight;
@@ -36,7 +37,7 @@ public class Gui extends GuiScreen {
     public Gui(GuiScreen old, List<EGuiObject> list, int guiID, boolean useDefaultBackground) {
         this.old = old;
         objList = list;
-        EbuttonList = buttonList;
+        GuiButtonList = buttonList;
         this.guiID = guiID;
         oldWidth = width;
         oldHeight = height;
@@ -67,7 +68,7 @@ public class Gui extends GuiScreen {
             drawDefaultBackground();
         }
         for (EGuiObject obj : objList) {
-            obj.draw(this);
+            obj.draw();
         }
         super.drawScreen(mouseX, mouseY, partialTicks);
     }
@@ -79,7 +80,16 @@ public class Gui extends GuiScreen {
     @Override
     public void initGui() {
         for (EGuiObject obj : objList) {
-            obj.init(this);
+            obj.init();
+            if (obj instanceof EGuiCustomButton) {
+                GuiButtonList.add(((EGuiCustomButton) obj).instance);
+            } else if (obj instanceof EGuiButton) {
+                GuiButtonList.add(((EGuiButton) obj).instance);
+            } else if (obj instanceof EGuiField) {
+                GuiFieldList.add(((EGuiField) obj).instance);
+            } else if (obj instanceof EGuiCustomField) {
+                GuiCustomFieldList.add(((EGuiCustomField) obj).instance);
+            }
         }
     }
 

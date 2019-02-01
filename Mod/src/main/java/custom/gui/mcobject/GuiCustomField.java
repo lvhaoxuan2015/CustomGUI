@@ -3,9 +3,9 @@ package custom.gui.mcobject;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import custom.gui.object.TextureManager;
+import custom.gui.util.GuiUtil;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
-import static net.minecraft.client.gui.Gui.drawRect;
 import net.minecraft.client.gui.GuiPageButtonList;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.GlStateManager;
@@ -374,7 +374,7 @@ public class GuiCustomField extends Gui {
                 }
                 GlStateManager.bindTexture(textureID);
                 GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-                Gui.drawModalRectWithCustomSizedTexture(xPosition, yPosition, textureX, textureY, width, height, width, height);
+                GuiUtil.drawModalRectWithCustomSizedTexture(xPosition, yPosition, textureX, textureY, width, height, width, height);
             }
             int i = this.isEnabled ? this.enabledColor : this.disabledColor;
             int j = this.cursorPosition - this.lineScrollOffset;

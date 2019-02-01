@@ -6,6 +6,8 @@ import java.util.List;
 import com.google.gson.JsonObject;
 
 import custom.gui.CustomGUI;
+import custom.gui.listener.MainListener;
+import custom.gui.listener.MainListener.GuiType;
 import custom.gui.object.EGuiObject;
 import io.netty.buffer.Unpooled;
 import net.minecraft.client.Minecraft;
@@ -25,5 +27,10 @@ public class CustomGUIAPI {
 
     public static void openGUI(List<EGuiObject> list, int guiID, boolean useDefaultBackground) {
         Minecraft.getMinecraft().displayGuiScreen(new Gui(Minecraft.getMinecraft().currentScreen, list, guiID, useDefaultBackground));
+    }
+
+    public static void implantationGUI(List<EGuiObject> list, String guiType) {
+        MainListener.map.put(GuiType.valueOf(guiType), list);
+        MainListener.isInitMap.put(GuiType.valueOf(guiType), false);
     }
 }

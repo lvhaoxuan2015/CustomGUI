@@ -2,8 +2,10 @@ package custom.gui.api;
 
 import com.google.gson.JsonObject;
 import custom.gui.PacketPlayOutCustomPayload;
+import custom.gui.listener.MainListener;
 import custom.gui.networkgui.NetWorkGui;
 import java.util.HashMap;
+import java.util.List;
 import org.bukkit.entity.Player;
 
 /**
@@ -29,6 +31,36 @@ public class API {
         jo.addProperty("GuiID", nwg.guiID);
         jo.addProperty("Method", "OPENGUI");
         new PacketPlayOutCustomPayload(p, jo.toString()).sendTo();
+    }
+
+    /**
+     * 为玩家p类型为guiType的GUI植入nwg的GUI中的组件
+     *
+     * @param p 玩家
+     * @param nwg GUI对象
+     * @param guiType GUI类型
+     */
+    public static void implantationGUI(Player p, NetWorkGui nwg, GuiType guiType) {
+        JsonObject jo = new JsonObject();
+        jo.addProperty("Gui", nwg.toJson());
+        jo.addProperty("GuiType", guiType.name());
+        jo.addProperty("Method", "IMPLANTATIONGUI");
+        new PacketPlayOutCustomPayload(p, jo.toString()).sendTo();
+    }
+
+    public enum GuiType {
+        GuiIngameMenu,
+        GuiChat,
+        GuiInventory,
+        GuiContainerCreative,
+        GuiChest,
+        GuiCrafting,
+        GuiFurnace,
+        GuiEnchantment,
+        GuiDispenser,
+        GuiHopper,
+        GuiDownloadTerrain,
+        InGame
     }
 
     /**

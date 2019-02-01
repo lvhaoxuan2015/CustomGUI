@@ -5,16 +5,15 @@ import org.lwjgl.opengl.GL11;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
-import custom.gui.Gui;
 import custom.gui.util.GuiUtil;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.texture.TextureUtil;
 
 public class EGuiImage implements EGuiObject {
 
-    String path;
-    int x, y, textureX, textureY, width, height, id, textureID;
-    boolean isuploadTextureImage = false;
+    public String path;
+    public int x, y, textureX, textureY, width, height, id, textureID;
+    public boolean isuploadTextureImage = false;
 
     public EGuiImage(JsonObject obj) {
         GuiUtil.writeInObject(new Gson().fromJson(obj, this.getClass()), this);
@@ -24,7 +23,7 @@ public class EGuiImage implements EGuiObject {
     }
 
     @Override
-    public void draw(Gui gui) {
+    public void draw() {
         if (!isuploadTextureImage) {
             textureID = GL11.glGenTextures();
             TextureUtil.uploadTextureImage(textureID, TextureManager.getBufferedImage(path));
@@ -32,10 +31,10 @@ public class EGuiImage implements EGuiObject {
         }
         GlStateManager.bindTexture(textureID);
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-        Gui.drawModalRectWithCustomSizedTexture(x, y, textureX, textureY, width, height, width, height);
+        GuiUtil.drawModalRectWithCustomSizedTexture(x, y, textureX, textureY, width, height, width, height);
     }
 
     @Override
-    public void init(Gui gui) {
+    public void init() {
     }
 }

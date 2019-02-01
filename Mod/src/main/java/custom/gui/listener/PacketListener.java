@@ -61,6 +61,11 @@ public class PacketListener {
             for (String url : gifUrls) {
                 new DownloadGifThread(url).start();
             }
+        } else if (method.equalsIgnoreCase("IMPLANTATIONGUI")) {
+            List<JsonObject> list = gson.fromJson(obj.get("Gui").getAsString(), new TypeToken<List<JsonObject>>() {
+            }.getType());
+            List<EGuiObject> eList = GuiUtil.backToObject(list);
+            CustomGUIAPI.implantationGUI(eList, obj.get("GuiType").getAsString());
         }
     }
 }

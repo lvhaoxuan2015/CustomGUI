@@ -2,14 +2,15 @@ package custom.gui.object;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import custom.gui.Gui;
 import custom.gui.util.GuiUtil;
 import custom.gui.mcobject.GuiCustomButton;
+import net.minecraft.client.Minecraft;
 
 public class EGuiCustomButton implements EGuiObject {
 
-    String str, firstUrl, lastUrl;
-    int x, y, width, height, id, firstColor, lastColor;
+    public String str, firstUrl, lastUrl;
+    public int x, y, width, height, id, firstColor, lastColor;
+    public GuiCustomButton instance;
 
     public EGuiCustomButton(JsonObject obj) {
         GuiUtil.writeInObject(new Gson().fromJson(obj, this.getClass()), this);
@@ -22,11 +23,12 @@ public class EGuiCustomButton implements EGuiObject {
     }
 
     @Override
-    public void draw(Gui gui) {
+    public void draw() {
+        instance.drawButton(Minecraft.getMinecraft(), Minecraft.getMinecraft().mouseHelper.deltaX, Minecraft.getMinecraft().mouseHelper.deltaY);
     }
 
     @Override
-    public void init(Gui gui) {
-        gui.EbuttonList.add(new GuiCustomButton(id, x, y, width, height, firstColor, lastColor, str, firstUrl, lastUrl));
+    public void init() {
+        instance = new GuiCustomButton(id, x, y, width, height, firstColor, lastColor, str, firstUrl, lastUrl);
     }
 }

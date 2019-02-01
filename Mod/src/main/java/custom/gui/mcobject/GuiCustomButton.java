@@ -1,9 +1,9 @@
 package custom.gui.mcobject;
 
 import custom.gui.object.TextureManager;
+import custom.gui.util.GuiUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.texture.TextureUtil;
@@ -43,7 +43,7 @@ public class GuiCustomButton extends GuiButton {
                 GlStateManager.bindTexture(firstTextureID);
             }
             GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-            Gui.drawModalRectWithCustomSizedTexture(xPosition, yPosition, textureX, textureY, width, height, width, height);
+            GuiUtil.drawModalRectWithCustomSizedTexture(xPosition, yPosition, textureX, textureY, width, height, width, height);
             if (this.hovered) {
                 this.drawCenteredString(fontrenderer, this.displayString, this.xPosition + this.width / 2, this.yPosition + (this.height - 8) / 2, lastColor);
             } else {

@@ -3,7 +3,7 @@ package custom.gui.networkgui;
 /**
  * 文本对象
  */
-public class NetWorkGuiString extends NetWorkGuiObject {
+public class NetWorkGuiText extends NetWorkGuiObject {
 
     public String str;
     public int x, y, color, id;
@@ -17,13 +17,13 @@ public class NetWorkGuiString extends NetWorkGuiObject {
      * @param y 按钮纵坐标
      * @param color 颜色，0x颜色
      */
-    public NetWorkGuiString(String str, int id, int x, int y, int color) {
+    public NetWorkGuiText(String str, int id, int x, int y, int color) {
         this.id = id;
         this.str = str;
         this.x = x;
         this.y = y;
         this.color = color;
-        type = "GuiString";
+        type = "GuiText";
     }
 
 }

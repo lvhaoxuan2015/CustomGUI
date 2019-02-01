@@ -3,8 +3,8 @@ package custom.gui.object;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
-import custom.gui.Gui;
 import custom.gui.util.GuiUtil;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiTextField;
 
 public class EGuiField implements EGuiObject {
@@ -17,15 +17,14 @@ public class EGuiField implements EGuiObject {
     }
 
     @Override
-    public void draw(Gui gui) {
+    public void draw() {
         instance.drawTextBox();
     }
 
     @Override
-    public void init(Gui gui) {
-        instance = new GuiTextField(id, gui.getFontRenderer(), x, y, width, height);
+    public void init() {
+        instance = new GuiTextField(id, Minecraft.getMinecraft().fontRendererObj, x, y, width, height);
         instance.setMaxStringLength(maxStringLength);
-        gui.GuiFieldList.add(instance);
     }
 
 }
