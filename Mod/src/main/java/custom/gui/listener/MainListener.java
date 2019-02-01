@@ -22,6 +22,5 @@ public class MainListener {
             CustomGUI.net.sendToServer(new FMLProxyPacket(
                     new PacketBuffer(Unpooled.wrappedBuffer((jo.toString()).getBytes())), CustomGUI.MODID));
         }
-        System.out.println("        " + e.getGui());
     }
 }
