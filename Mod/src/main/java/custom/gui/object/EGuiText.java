@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 
 import custom.gui.util.GuiUtil;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.GlStateManager;
 
 public class EGuiText implements EGuiObject {
 
@@ -18,6 +19,7 @@ public class EGuiText implements EGuiObject {
     @Override
     public void draw() {
         Minecraft.getMinecraft().fontRendererObj.drawString(str, x, y, color);
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
     }
 
     @Override

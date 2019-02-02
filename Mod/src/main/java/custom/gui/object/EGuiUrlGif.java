@@ -46,6 +46,7 @@ public class EGuiUrlGif implements EGuiObject {
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
         GuiUtil.drawModalRectWithCustomSizedTexture(x, y, textureX, textureY, width, height, width,
                 height);
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
     }
 
     @Override

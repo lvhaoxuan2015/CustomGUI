@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import custom.gui.util.GuiUtil;
 import custom.gui.mcobject.GuiCustomButton;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.GlStateManager;
 
 public class EGuiCustomButton implements EGuiObject {
 
@@ -25,6 +26,7 @@ public class EGuiCustomButton implements EGuiObject {
     @Override
     public void draw() {
         instance.drawButton(Minecraft.getMinecraft(), Minecraft.getMinecraft().mouseHelper.deltaX, Minecraft.getMinecraft().mouseHelper.deltaY);
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
     }
 
     @Override

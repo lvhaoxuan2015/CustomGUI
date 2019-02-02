@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 import custom.gui.util.GuiUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiTextField;
+import net.minecraft.client.renderer.GlStateManager;
 
 public class EGuiField implements EGuiObject {
 
@@ -19,6 +20,7 @@ public class EGuiField implements EGuiObject {
     @Override
     public void draw() {
         instance.drawTextBox();
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
     }
 
     @Override
