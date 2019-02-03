@@ -15,6 +15,7 @@ public class EGuiUrlGif implements EGuiObject {
     public boolean[] isuploadTextureImage;
     public int[] textureIDs;
     public BufferedImage[] imgs;
+    public boolean wheel;
 
     public EGuiUrlGif(JsonObject obj) {
         GuiUtil.writeInObject(new Gson().fromJson(obj, this.getClass()), this);
@@ -37,16 +38,22 @@ public class EGuiUrlGif implements EGuiObject {
         if (frameNum == length) {
             frameNum = 0;
         }
-        if (!isuploadTextureImage[frameNum]) {
-            textureIDs[frameNum] = GL11.glGenTextures();
-            TextureUtil.uploadTextureImage(textureIDs[frameNum], imgs[frameNum]);
-            isuploadTextureImage[frameNum] = true;
+        try {
+            if (!isuploadTextureImage[frameNum]) {
+                textureIDs[frameNum] = GL11.glGenTextures();
+                TextureUtil.uploadTextureImage(textureIDs[frameNum], imgs[frameNum]);
+                isuploadTextureImage[frameNum] = true;
+            }
+            GlStateManager.bindTexture(textureIDs[frameNum]);
+            GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+            GuiUtil.drawModalRectWithCustomSizedTexture(x, y, textureX, textureY, width, height, width,
+                    height);
+            GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);    
+        } catch (ArrayIndexOutOfBoundsException e) {
+            System.out.println("isuploadTextureImage:" + isuploadTextureImage.length + "\n" +
+                    "textureIDs:" + textureIDs.length );
         }
-        GlStateManager.bindTexture(textureIDs[frameNum]);
-        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-        GuiUtil.drawModalRectWithCustomSizedTexture(x, y, textureX, textureY, width, height, width,
-                height);
-        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+        
     }
 
     @Override

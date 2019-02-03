@@ -9,9 +9,12 @@ import com.google.gson.JsonObject;
 import custom.gui.object.*;
 import custom.gui.mcobject.*;
 import custom.gui.api.CustomGUIAPI;
+import custom.gui.implantation.InvokeUtil;
 import custom.gui.object.EGuiCustomButton;
 import io.netty.buffer.Unpooled;
 import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiButton;
@@ -21,26 +24,28 @@ import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.common.network.internal.FMLProxyPacket;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.lwjgl.input.Mouse;
 
 @SideOnly(Side.CLIENT)
 public class Gui extends GuiScreen {
 
     public GuiScreen old;
-    public List<EGuiObject> objList = new ArrayList<>();
+    public List<EGuiObject> objList;
     public List<GuiButton> GuiButtonList = new ArrayList<>();
     public List<GuiTextField> GuiFieldList = new ArrayList<>();
     public List<GuiCustomField> GuiCustomFieldList = new ArrayList<>();
-    public int guiID, oldWidth, oldHeight;
+    public int guiID, oldWidth, oldHeight, wheelSpeed;
     public boolean useDefaultBackground;
     HashMap<String, String> variablesMap = new HashMap<>();
 
-    public Gui(GuiScreen old, List<EGuiObject> list, int guiID, boolean useDefaultBackground) {
+    public Gui(GuiScreen old, List<EGuiObject> list, int guiID, int wheelSpeed, boolean useDefaultBackground) {
         this.old = old;
         objList = list;
         GuiButtonList = buttonList;
         this.guiID = guiID;
         oldWidth = width;
         oldHeight = height;
+        this.wheelSpeed = wheelSpeed;
         this.useDefaultBackground = useDefaultBackground;
     }
 
@@ -135,5 +140,27 @@ public class Gui extends GuiScreen {
 
     public void close() {
         Minecraft.getMinecraft().displayGuiScreen(old);
+    }
+
+    @Override
+    public void handleMouseInput() throws IOException {
+        int wheel = Mouse.getEventDWheel();
+        if (wheel != 0) {
+            for (EGuiObject obj : objList) {
+                try {
+                    if (InvokeUtil.getField(obj.getClass(), "wheel").get(obj) != null) {
+                        if ((Boolean) InvokeUtil.getField(obj.getClass(), "wheel").get(obj)) {
+                            if (wheel < 0) {
+                                InvokeUtil.setValue(obj, "y", (Integer) InvokeUtil.getField(obj.getClass(), "y").get(obj) + wheelSpeed);
+                            } else {
+                                InvokeUtil.setValue(obj, "y", (Integer) InvokeUtil.getField(obj.getClass(), "y").get(obj) - wheelSpeed);
+                            }
+                        }
+                    }
+                } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException ex) {
+                }
+            }
+        }
+        super.handleMouseInput();
     }
 }

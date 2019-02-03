@@ -11,6 +11,7 @@ public class EGuiText implements EGuiObject {
 
     public String str;
     public int x, y, color, id;
+    public boolean wheel;
 
     public EGuiText(JsonObject obj) {
         GuiUtil.writeInObject(new Gson().fromJson(obj, this.getClass()), this);

@@ -14,6 +14,7 @@ public class EGuiImage implements EGuiObject {
     public String path;
     public int x, y, textureX, textureY, width, height, id, textureID;
     public boolean isuploadTextureImage = false;
+    public boolean wheel;
 
     public EGuiImage(JsonObject obj) {
         GuiUtil.writeInObject(new Gson().fromJson(obj, this.getClass()), this);

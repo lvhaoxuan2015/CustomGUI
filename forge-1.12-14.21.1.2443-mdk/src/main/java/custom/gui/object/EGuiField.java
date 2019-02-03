@@ -12,6 +12,7 @@ public class EGuiField implements EGuiObject {
 
     public int x, y, width, height, id, maxStringLength;
     public GuiTextField instance;
+    public boolean wheel;
 
     public EGuiField(JsonObject obj) {
         GuiUtil.writeInObject(new Gson().fromJson(obj, this.getClass()), this);
@@ -19,6 +20,10 @@ public class EGuiField implements EGuiObject {
 
     @Override
     public void draw() {
+        instance.x = x;
+        instance.y = y;
+        instance.width = width;
+        instance.height = height;
         instance.drawTextBox();
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
     }

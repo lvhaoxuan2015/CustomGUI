@@ -2,10 +2,8 @@ package custom.gui.api;
 
 import com.google.gson.JsonObject;
 import custom.gui.PacketPlayOutCustomPayload;
-import custom.gui.listener.MainListener;
 import custom.gui.networkgui.NetWorkGui;
 import java.util.HashMap;
-import java.util.List;
 import org.bukkit.entity.Player;
 
 /**
@@ -26,9 +24,10 @@ public class API {
      */
     public static void openGui(Player p, NetWorkGui nwg) {
         JsonObject jo = new JsonObject();
-        jo.addProperty("Gui", nwg.toJson());
+        jo.addProperty("Gui", nwg.objListToJson());
         jo.addProperty("UseDefaultBackground", nwg.useDefaultBackground);
         jo.addProperty("GuiID", nwg.guiID);
+        jo.addProperty("WheelSpeed", nwg.wheelSpeed);
         jo.addProperty("Method", "OPENGUI");
         new PacketPlayOutCustomPayload(p, jo.toString()).sendTo();
     }
@@ -42,7 +41,7 @@ public class API {
      */
     public static void implantationGUI(Player p, NetWorkGui nwg, GuiType guiType) {
         JsonObject jo = new JsonObject();
-        jo.addProperty("Gui", nwg.toJson());
+        jo.addProperty("Gui", nwg.objListToJson());
         jo.addProperty("GuiType", guiType.name());
         jo.addProperty("Method", "IMPLANTATIONGUI");
         new PacketPlayOutCustomPayload(p, jo.toString()).sendTo();

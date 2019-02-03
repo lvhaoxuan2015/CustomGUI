@@ -10,9 +10,11 @@ import java.util.HashMap;
 import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.entity.Entity;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.client.event.GuiOpenEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent.*;
+import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.network.internal.FMLProxyPacket;
 
@@ -33,6 +35,13 @@ public class MainListener {
         }
     }
 
+    /*@SubscribeEvent
+    public void RenderWorldLastEvent(RenderWorldLastEvent e) {
+        for (Entity entity : Minecraft.getMinecraft().world.loadedEntityList) {
+
+        }
+    }*/
+    
     @SubscribeEvent
     public void RenderGameOverlayEventPre(Pre e) {
         if (e.getType() == ElementType.CROSSHAIRS) {

@@ -35,11 +35,12 @@ public class PacketListener {
         String method = obj.get("Method").getAsString();
         if (method.equalsIgnoreCase("OPENGUI")) {
             int guiID = obj.get("GuiID").getAsInt();
+            int wheelSpeed = obj.get("WheelSpeed").getAsInt();
             boolean useDefaultBackground = obj.get("UseDefaultBackground").getAsBoolean();
             List<JsonObject> list = gson.fromJson(obj.get("Gui").getAsString(), new TypeToken<List<JsonObject>>() {
             }.getType());
             List<EGuiObject> eList = GuiUtil.backToObject(list);
-            CustomGUIAPI.openGUI(eList, guiID, useDefaultBackground);
+            CustomGUIAPI.openGUI(eList, guiID, wheelSpeed, useDefaultBackground);
         } else if (method.equalsIgnoreCase("CLOSENOWGUI")) {
             if (Minecraft.getMinecraft().currentScreen instanceof Gui) {
                 Gui gui = (Gui) Minecraft.getMinecraft().currentScreen;

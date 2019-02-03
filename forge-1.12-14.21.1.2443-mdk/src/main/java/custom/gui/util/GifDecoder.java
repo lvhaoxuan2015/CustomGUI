@@ -514,25 +514,20 @@ public class GifDecoder {
     }
 
     protected void readHeader() {
-        try {
-            String id = "";
-            for (int i = 0; i < 6; i++) {
-                id += (char) read();
-            }
-            if (!id.startsWith("GIF")) {
-                status = STATUS_FORMAT_ERROR;
-                return;
-            }
-
-            readLSD();
-            if (gctFlag && !err()) {
-                gct = readColorTable(gctSize);
-                bgColor = gct[bgIndex];
-            }
-        } catch (NullPointerException e) {
-            readHeader();
+        String id = "";
+        for (int i = 0; i < 6; i++) {
+            id += (char) read();
+        }
+        if (!id.startsWith("GIF")) {
+            status = STATUS_FORMAT_ERROR;
+            return;
         }
 
+        readLSD();
+        if (gctFlag && !err()) {
+            gct = readColorTable(gctSize);
+            bgColor = gct[bgIndex];
+        }
     }
 
     protected void readImage() {

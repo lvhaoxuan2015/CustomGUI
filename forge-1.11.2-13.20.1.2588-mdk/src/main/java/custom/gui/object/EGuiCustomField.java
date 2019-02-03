@@ -13,6 +13,7 @@ public class EGuiCustomField implements EGuiObject {
     public int x, y, width, height, id, maxStringLength, textureX, textureY;
     public GuiCustomField instance;
     public String url;
+    public boolean wheel;
 
     public EGuiCustomField(JsonObject obj) {
         GuiUtil.writeInObject(new Gson().fromJson(obj, this.getClass()), this);
@@ -23,6 +24,10 @@ public class EGuiCustomField implements EGuiObject {
 
     @Override
     public void draw() {
+        instance.xPosition = x;
+        instance.yPosition = y;
+        instance.width = width;
+        instance.height = height;
         instance.drawTextBox();
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
     }

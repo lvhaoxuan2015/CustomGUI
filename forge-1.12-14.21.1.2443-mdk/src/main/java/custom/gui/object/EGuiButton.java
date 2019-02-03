@@ -13,6 +13,7 @@ public class EGuiButton implements EGuiObject {
     public String str;
     public int x, y, width, height, id;
     public GuiButton instance;
+    public boolean wheel;
 
     public EGuiButton(JsonObject obj) {
         GuiUtil.writeInObject(new Gson().fromJson(obj, this.getClass()), this);
@@ -20,6 +21,11 @@ public class EGuiButton implements EGuiObject {
 
     @Override
     public void draw() {
+        instance.x = x;
+        instance.y = y;
+        instance.displayString = str;
+        instance.width = width;
+        instance.height = height;
         instance.drawButton(Minecraft.getMinecraft(), Minecraft.getMinecraft().mouseHelper.deltaX, Minecraft.getMinecraft().mouseHelper.deltaY, Minecraft.getMinecraft().getRenderPartialTicks());
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
     }

@@ -25,8 +25,8 @@ public class CustomGUIAPI {
                 new PacketBuffer(Unpooled.wrappedBuffer((jo.toString()).getBytes())), CustomGUI.MODID));
     }
 
-    public static void openGUI(List<EGuiObject> list, int guiID, boolean useDefaultBackground) {
-        Minecraft.getMinecraft().displayGuiScreen(new Gui(Minecraft.getMinecraft().currentScreen, list, guiID, useDefaultBackground));
+    public static void openGUI(List<EGuiObject> list, int guiID, int wheelSpeed, boolean useDefaultBackground) {
+        Minecraft.getMinecraft().displayGuiScreen(new Gui(Minecraft.getMinecraft().currentScreen, list, guiID, wheelSpeed, useDefaultBackground));
     }
 
     public static void implantationGUI(List<EGuiObject> list, String guiType) {

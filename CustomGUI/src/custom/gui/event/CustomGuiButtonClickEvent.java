@@ -9,9 +9,9 @@ import org.bukkit.entity.Player;
  */
 public class CustomGuiButtonClickEvent extends Event {
 
-    HandlerList hl = new HandlerList();
-    int buttonID, guiID;
-    Player p;
+    private static final HandlerList hl = new HandlerList();
+    private int buttonID, guiID;
+    private Player p;
 
     public CustomGuiButtonClickEvent(int buttonID, int guiID, Player p) {
         this.buttonID = buttonID;
@@ -31,7 +31,7 @@ public class CustomGuiButtonClickEvent extends Event {
         return this.p;
     }
 
-    public HandlerList getHandlerList() {
+    public static HandlerList getHandlerList() {
         return hl;
     }
 

@@ -13,6 +13,7 @@ public class EGuiUrlsGif implements EGuiObject {
     public int x, y, textureX, textureY, width, height, id, speed, frameNum = 0, counter = 0;
     public boolean[] isuploadTextureImage;
     public int[] textureIDs;
+    public boolean wheel;
 
     public EGuiUrlsGif(JsonObject obj) {
         GuiUtil.writeInObject(new Gson().fromJson(obj, this.getClass()), this);

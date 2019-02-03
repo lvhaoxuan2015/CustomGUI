@@ -9,9 +9,9 @@ import org.bukkit.entity.Player;
  */
 public class CustomGuiOpenEvent extends Event {
 
-    HandlerList hl = new HandlerList();
-    int id;
-    Player p;
+    private static final HandlerList hl = new HandlerList();
+    private int id;
+    private Player p;
 
     public CustomGuiOpenEvent(int id, Player p) {
         this.id = id;
@@ -26,7 +26,7 @@ public class CustomGuiOpenEvent extends Event {
         return this.p;
     }
 
-    public HandlerList getHandlerList() {
+    public static HandlerList getHandlerList() {
         return hl;
     }
 
