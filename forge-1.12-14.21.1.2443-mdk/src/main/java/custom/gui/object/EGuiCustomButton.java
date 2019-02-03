@@ -12,6 +12,7 @@ public class EGuiCustomButton implements EGuiObject {
     public String str, firstUrl, lastUrl;
     public int x, y, width, height, id, firstColor, lastColor;
     public GuiCustomButton instance;
+    public float textureWidth, textureHeight;
     public boolean wheel;
 
     public EGuiCustomButton(JsonObject obj) {
@@ -37,6 +38,6 @@ public class EGuiCustomButton implements EGuiObject {
 
     @Override
     public void init() {
-        instance = new GuiCustomButton(id, x, y, width, height, firstColor, lastColor, str, firstUrl, lastUrl);
+        instance = new GuiCustomButton(id, x, y, width, height, textureWidth, textureHeight, firstColor, lastColor, str, firstUrl, lastUrl);
     }
 }

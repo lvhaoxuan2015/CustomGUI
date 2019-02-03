@@ -13,8 +13,6 @@ import custom.gui.implantation.InvokeUtil;
 import custom.gui.object.EGuiCustomButton;
 import io.netty.buffer.Unpooled;
 import java.util.HashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiButton;

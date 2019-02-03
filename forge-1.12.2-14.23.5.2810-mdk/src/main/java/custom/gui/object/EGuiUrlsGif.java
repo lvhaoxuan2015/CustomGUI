@@ -11,6 +11,7 @@ public class EGuiUrlsGif implements EGuiObject {
 
     public String[] paths;
     public int x, y, textureX, textureY, width, height, id, speed, frameNum = 0, counter = 0;
+    public float textureWidth, textureHeight;
     public boolean[] isuploadTextureImage;
     public int[] textureIDs;
     public boolean wheel;
@@ -41,8 +42,7 @@ public class EGuiUrlsGif implements EGuiObject {
         }
         GlStateManager.bindTexture(textureIDs[frameNum]);
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-        GuiUtil.drawModalRectWithCustomSizedTexture(x, y, textureX, textureY, width, height, width,
-                height);
+        GuiUtil.drawModalRectWithCustomSizedTexture(x, y, textureX, textureY, width, height, textureWidth, textureHeight);
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
     }
 

@@ -46,10 +46,11 @@ public class GuiCustomField extends Gui {
     private GuiPageButtonList.GuiResponder guiResponder;
     private Predicate<String> validator = Predicates.<String>alwaysTrue();
     String url;
+    float textureWidth, textureHeight;
     int textureID, textureX, textureY;
     boolean isuploadTextureImage = false;
 
-    public GuiCustomField(int componentId, FontRenderer fontrendererObj, int x, int y, int par5Width, int par6Height, int textureX, int textureY, String url) {
+    public GuiCustomField(int componentId, FontRenderer fontrendererObj, int x, int y, int par5Width, int par6Height, int textureX, int textureY, float textureWidth, float textureHeight, String url) {
         this.id = componentId;
         this.fontRenderer = fontrendererObj;
         this.x = x;
@@ -58,6 +59,8 @@ public class GuiCustomField extends Gui {
         this.height = par6Height;
         this.textureX = textureX;
         this.textureY = textureY;
+        this.textureWidth = textureWidth;
+        this.textureHeight = textureHeight;
         this.url = url;
     }
 
@@ -379,7 +382,7 @@ public class GuiCustomField extends Gui {
                 }
                 GlStateManager.bindTexture(textureID);
                 GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-                GuiUtil.drawModalRectWithCustomSizedTexture(x, y, textureX, textureY, width, height, width, height);
+                GuiUtil.drawModalRectWithCustomSizedTexture(x, y, textureX, textureY, width, height, textureWidth, textureHeight);
             }
             int i = this.isEnabled ? this.enabledColor : this.disabledColor;
             int j = this.cursorPosition - this.lineScrollOffset;

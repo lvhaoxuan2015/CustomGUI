@@ -13,6 +13,7 @@ public class EGuiImage implements EGuiObject {
 
     public String path;
     public int x, y, textureX, textureY, width, height, id, textureID;
+    public float textureWidth, textureHeight;
     public boolean isuploadTextureImage = false;
     public boolean wheel;
 
@@ -32,7 +33,7 @@ public class EGuiImage implements EGuiObject {
         }
         GlStateManager.bindTexture(textureID);
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-        GuiUtil.drawModalRectWithCustomSizedTexture(x, y, textureX, textureY, width, height, width, height);
+        GuiUtil.drawModalRectWithCustomSizedTexture(x, y, textureX, textureY, width, height, textureWidth, textureHeight);
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
     }
 

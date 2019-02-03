@@ -12,6 +12,7 @@ public class EGuiCustomField implements EGuiObject {
 
     public int x, y, width, height, id, maxStringLength, textureX, textureY;
     public GuiCustomField instance;
+    public float textureWidth, textureHeight;
     public String url;
     public boolean wheel;
 
@@ -34,7 +35,7 @@ public class EGuiCustomField implements EGuiObject {
 
     @Override
     public void init() {
-        instance = new GuiCustomField(id, Minecraft.getMinecraft().fontRenderer, x, y, width, height, textureX, textureY, url);
+        instance = new GuiCustomField(id, Minecraft.getMinecraft().fontRenderer, x, y, width, height, textureX, textureY, textureWidth, textureHeight, url);
         instance.setMaxStringLength(maxStringLength);
     }
 

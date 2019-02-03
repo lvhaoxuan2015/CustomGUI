@@ -16,14 +16,17 @@ public class GuiCustomButton extends GuiButton {
 
     String firstUrl, lastUrl;
     int textureX, textureY, firstTextureID, lastTextureID, firstColor, lastColor;
+    float textureWidth, textureHeight;
     boolean isuploadTextureImage = false;
 
-    public GuiCustomButton(int buttonId, int x, int y, int widthIn, int heightIn, int firstColor, int lastColor, String buttonText, String imgUrl, String lastUrl) {
+    public GuiCustomButton(int buttonId, int x, int y, int widthIn, int heightIn, float textureWidth, float textureHeight, int firstColor, int lastColor, String buttonText, String imgUrl, String lastUrl) {
         super(buttonId, x, y, widthIn, heightIn, buttonText);
         this.firstUrl = imgUrl;
         this.lastUrl = lastUrl;
         this.firstColor = firstColor;
         this.lastColor = lastColor;
+        this.textureWidth = textureWidth;
+        this.textureHeight = textureHeight;
     }
 
     public void drawButton(Minecraft mc, int mouseX, int mouseY, float partialTicks) {
@@ -43,7 +46,7 @@ public class GuiCustomButton extends GuiButton {
                 GlStateManager.bindTexture(firstTextureID);
             }
             GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-            GuiUtil.drawModalRectWithCustomSizedTexture(x, y, textureX, textureY, width, height, width, height);
+            GuiUtil.drawModalRectWithCustomSizedTexture(x, y, textureX, textureY, width, height, textureWidth, textureHeight);
             if (this.hovered) {
                 this.drawCenteredString(fontrenderer, this.displayString, this.x + this.width / 2, this.y + (this.height - 8) / 2, lastColor);
             } else {
