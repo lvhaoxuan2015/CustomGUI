@@ -1,14 +1,13 @@
 package custom.gui;
 
 import custom.gui.listener.PacketListener;
-import custom.gui.api.API;
 import custom.gui.listener.MainListener;
-import custom.gui.networkgui.*;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
+import org.bukkit.command.*;
+import org.bukkit.*;
+import custom.gui.networkgui.*;
+import custom.gui.api.*;
+import org.bukkit.entity.*;
 
 public class CustomGUI extends JavaPlugin {
 
@@ -20,31 +19,23 @@ public class CustomGUI extends JavaPlugin {
         getServer().getMessenger().registerIncomingPluginChannel(this, "customgui", pl);
         getServer().getMessenger().registerOutgoingPluginChannel(this, "customgui");
         getServer().getPluginManager().registerEvents(new MainListener(), this);
-        NetWorkGuiManager.addGifURL("https://n.sinaimg.cn/tech/transform/523/w299h224/20190130/IMDE-hshmsti2178231.gif");
-        NetWorkGuiManager.addImageURL("https://gss1.bdstatic.com/-vo3dSag_xI4khGkpoWK1HF6hhy/baike/c0%3Dbaike80%2C5%2C5%2C80%2C26/sign=468864cdf0039245b5b8e95de6fdcfa7/54fbb2fb43166d22ca0c87944a2309f79052d2b3.jpg");
-        NetWorkGuiManager.addImageURL("https://ss1.baidu.com/6ONXsjip0QIZ8tyhnq/it/u=2422309363,3456238023&fm=58&bpow=710&bpoh=532");
-        NetWorkGuiManager.addImageURL("https://ss1.baidu.com/6ONXsjip0QIZ8tyhnq/it/u=906132994,4223306353&fm=58&bpow=800&bpoh=600");
     }
 
-    @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (sender.isOp()) {
-            if (args.length == 1) {
-                Player p = (Player) Bukkit.getPlayer(args[0]);
-                if (p != null) {
-                    NetWorkGui nwg = new NetWorkGui(NetWorkGuiManager.distributeID());
-                    nwg.setUseDefaultBackground(true);
-                    NetWorkGuiImage nwgi = new NetWorkGuiImage("https://gss1.bdstatic.com/-vo3dSag_xI4khGkpoWK1HF6hhy/baike/c0%3Dbaike80%2C5%2C5%2C80%2C26/sign=468864cdf0039245b5b8e95de6fdcfa7/54fbb2fb43166d22ca0c87944a2309f79052d2b3.jpg", NetWorkGuiManager.distributeID(), 0, 0, 0, 0, 100, 100, 120, 150);
-                    nwgi.setWheel(true);
-                    nwg.objList.add(nwgi);
-                    nwg.objList.add(new NetWorkGuiButton("Test", NetWorkGuiManager.distributeID(), 0, 0, 80, 20));
-                    nwg.objList.add(new NetWorkGuiText("Test", NetWorkGuiManager.distributeID(), 0, 20, 0xFF3030));
-                    nwg.objList.add(new NetWorkGuiField(NetWorkGuiManager.distributeID(), 0, 60, 200, 20, 128));
-                    API.openGui(p, nwg);
-                }
+        if (sender.isOp() && args.length == 1) {
+            Player p = Bukkit.getPlayer(args[0]);
+            if (p != null) {
+                NetWorkGui nwg = new NetWorkGui(NetWorkGuiManager.distributeID());
+                nwg.setUseDefaultBackground(true);
+                nwg.objList.add(new NetWorkGuiUrlGif("https://imgsa.baidu.com/forum/w%3D580/sign=1134406ad4c451daf6f60ce386fc52a5/fbabde529822720e06123ace72cb0a46f31fab87.jpg", NetWorkGuiManager.distributeID(), 4, 240, 0, 0, 0, 352, 240, 352.0f, 240.0f));
+                nwg.objList.add(new NetWorkGuiImage("https://gss2.bdstatic.com/9fo3dSag_xI4khGkpoWK1HF6hhy/baike/w%3D268%3Bg%3D0/sign=80c78b32a4d3fd1f3609a53c08754222/6c224f4a20a446230bbbbd7e9422720e0cf3d7bc.jpg", NetWorkGuiManager.distributeID(), 0, 0, 0, 0, 240, 300, 240.0f, 300.0f).setWheel(true));
+                nwg.objList.add(new NetWorkGuiButton("Test", NetWorkGuiManager.distributeID(), 0, 0, 80, 20));
+                nwg.objList.add(new NetWorkGuiText("Test", NetWorkGuiManager.distributeID(), 0, 20, 16724016));
+                nwg.objList.add(new NetWorkGuiText("¡ìe¡ìlTest22222", NetWorkGuiManager.distributeID(), 0, 300, 16724016).setWheel(true));
+                nwg.objList.add(new NetWorkGuiField(NetWorkGuiManager.distributeID(), 0, 60, 200, 20, 128));
+                API.openGui(p, nwg);
             }
         }
         return false;
     }
-
 }

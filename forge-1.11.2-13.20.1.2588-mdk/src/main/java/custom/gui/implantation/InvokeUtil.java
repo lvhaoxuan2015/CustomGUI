@@ -5,8 +5,19 @@ import net.minecraft.client.gui.GuiScreen;
 
 public class InvokeUtil {
 
-    public static void setValue(Object instance, String fieldName, Object value) throws IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException {
-        getField(instance.getClass(), fieldName).set(instance, value);
+    public static <T extends Object> T getValue(Object instance, String fieldName, Class<T> sourceObj) {
+        try {
+            return (T) getField(instance.getClass(), fieldName).get(instance);
+        } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException ex) {
+        }
+        return null;
+    }
+
+    public static void setValue(Object instance, String fieldName, Object value) {
+        try {
+            getField(instance.getClass(), fieldName).set(instance, value);
+        } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException ex) {
+        }
     }
 
     public static Field getField(Class<?> clazz, String fieldName) throws NoSuchFieldException, SecurityException {

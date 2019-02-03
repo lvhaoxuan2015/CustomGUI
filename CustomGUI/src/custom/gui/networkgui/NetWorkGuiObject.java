@@ -12,8 +12,10 @@ public abstract class NetWorkGuiObject {
      * 设置是否随鼠标滚轮移动
      *
      * @param flag 是/否
+     * @return 自身对象
      */
-    public void setWheel(boolean flag) {
+    public NetWorkGuiObject setWheel(boolean flag) {
         wheel = flag;
+        return this;
     }
 }

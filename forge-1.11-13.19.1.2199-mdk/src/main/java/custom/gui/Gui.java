@@ -35,6 +35,7 @@ public class Gui extends GuiScreen {
     public int guiID, oldWidth, oldHeight, wheelSpeed;
     public boolean useDefaultBackground;
     HashMap<String, String> variablesMap = new HashMap<>();
+    EGuiObject highestObj, leastObj;
 
     public Gui(GuiScreen old, List<EGuiObject> list, int guiID, int wheelSpeed, boolean useDefaultBackground) {
         this.old = old;
@@ -82,8 +83,19 @@ public class Gui extends GuiScreen {
 
     @Override
     public void initGui() {
+        int highest = 0, least = 0;
         for (EGuiObject obj : objList) {
             obj.init();
+            if (InvokeUtil.getValue(obj, "wheel", Boolean.class)) {
+                if (InvokeUtil.getValue(obj, "y", Integer.class) >= highest) {
+                    highest = InvokeUtil.getValue(obj, "y", Integer.class);
+                    highestObj = obj;
+                }
+                if (InvokeUtil.getValue(obj, "y", Integer.class) <= least) {
+                    least = InvokeUtil.getValue(obj, "y", Integer.class);
+                    leastObj = obj;
+                }
+            }
             if (obj instanceof EGuiCustomButton) {
                 GuiButtonList.add(((EGuiCustomButton) obj).instance);
             } else if (obj instanceof EGuiButton) {
@@ -144,21 +156,25 @@ public class Gui extends GuiScreen {
     public void handleMouseInput() throws IOException {
         int wheel = Mouse.getEventDWheel();
         if (wheel != 0) {
-            for (EGuiObject obj : objList) {
-                try {
-                    if (InvokeUtil.getField(obj.getClass(), "wheel").get(obj) != null) {
-                        if ((Boolean) InvokeUtil.getField(obj.getClass(), "wheel").get(obj)) {
-                            if (wheel < 0) {
-                                InvokeUtil.setValue(obj, "y", (Integer) InvokeUtil.getField(obj.getClass(), "y").get(obj) + wheelSpeed);
-                            } else {
-                                InvokeUtil.setValue(obj, "y", (Integer) InvokeUtil.getField(obj.getClass(), "y").get(obj) - wheelSpeed);
-                            }
+            if (canMouseDWheel(wheel)) {
+                for (EGuiObject obj : objList) {
+                    if (InvokeUtil.getValue(obj, "wheel", Boolean.class)) {
+                        if (wheel < 0) {
+                            InvokeUtil.setValue(obj, "y", InvokeUtil.getValue(obj, "y", Integer.class) + wheelSpeed);
+                        } else {
+                            InvokeUtil.setValue(obj, "y", InvokeUtil.getValue(obj, "y", Integer.class) - wheelSpeed);
                         }
                     }
-                } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException ex) {
                 }
             }
         }
         super.handleMouseInput();
+    }
+
+    public boolean canMouseDWheel(int wheel) {
+        if (highestObj != null && leastObj != null) {
+            return !((InvokeUtil.getValue(leastObj, "y", Integer.class) <= 0 && wheel > 0) || (InvokeUtil.getValue(highestObj, "y", Integer.class) + InvokeUtil.getValue(highestObj, "height", Integer.class) > height && wheel < 0));
+        }
+        return false;
     }
 }
