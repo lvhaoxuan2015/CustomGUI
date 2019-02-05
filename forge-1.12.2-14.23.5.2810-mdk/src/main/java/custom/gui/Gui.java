@@ -72,7 +72,7 @@ public class Gui extends GuiScreen {
             drawDefaultBackground();
         }
         for (EGuiObject obj : objList) {
-            obj.draw();
+            obj.draw(mouseX, mouseY, partialTicks);
         }
         super.drawScreen(mouseX, mouseY, partialTicks);
     }

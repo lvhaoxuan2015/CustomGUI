@@ -30,7 +30,7 @@ public class EGuiUrlGif implements EGuiObject {
     }
 
     @Override
-    public void draw() {
+    public void draw(int mouseX, int mouseY, float partialTicks) {
         counter++;
         if (counter == speed) {
             frameNum++;
@@ -51,6 +51,7 @@ public class EGuiUrlGif implements EGuiObject {
             GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
         } catch (ArrayIndexOutOfBoundsException e) {
         }
+
     }
 
     @Override

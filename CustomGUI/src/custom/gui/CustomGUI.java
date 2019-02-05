@@ -7,6 +7,7 @@ import org.bukkit.command.*;
 import org.bukkit.*;
 import custom.gui.networkgui.*;
 import custom.gui.api.*;
+import custom.gui.api.API.GuiType;
 import org.bukkit.entity.*;
 
 public class CustomGUI extends JavaPlugin {
@@ -19,6 +20,7 @@ public class CustomGUI extends JavaPlugin {
         getServer().getMessenger().registerIncomingPluginChannel(this, "customgui", pl);
         getServer().getMessenger().registerOutgoingPluginChannel(this, "customgui");
         getServer().getPluginManager().registerEvents(new MainListener(), this);
+        NetWorkGuiManager.addImageURL("https://ss0.bdstatic.com/70cFuHSh_Q1YnxGkpoWK1HF6hhy/it/u=3871474308,1566042740&fm=26&gp=0.jpg");
     }
 
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
@@ -27,13 +29,18 @@ public class CustomGUI extends JavaPlugin {
             if (p != null) {
                 NetWorkGui nwg = new NetWorkGui(NetWorkGuiManager.distributeID());
                 nwg.setUseDefaultBackground(true);
-                nwg.objList.add(new NetWorkGuiUrlGif("https://imgsa.baidu.com/forum/w%3D580/sign=1134406ad4c451daf6f60ce386fc52a5/fbabde529822720e06123ace72cb0a46f31fab87.jpg", NetWorkGuiManager.distributeID(), 4, 240, 0, 0, 0, 352, 240, 352.0f, 240.0f));
-                nwg.objList.add(new NetWorkGuiImage("https://gss2.bdstatic.com/9fo3dSag_xI4khGkpoWK1HF6hhy/baike/w%3D268%3Bg%3D0/sign=80c78b32a4d3fd1f3609a53c08754222/6c224f4a20a446230bbbbd7e9422720e0cf3d7bc.jpg", NetWorkGuiManager.distributeID(), 0, 0, 0, 0, 240, 300, 240.0f, 300.0f).setWheel(true));
-                nwg.objList.add(new NetWorkGuiButton("Test", NetWorkGuiManager.distributeID(), 0, 0, 80, 20));
-                nwg.objList.add(new NetWorkGuiText("Test", NetWorkGuiManager.distributeID(), 0, 20, 16724016));
-                nwg.objList.add(new NetWorkGuiText("¡ìe¡ìlTest22222", NetWorkGuiManager.distributeID(), 0, 300, 16724016).setWheel(true));
-                nwg.objList.add(new NetWorkGuiField(NetWorkGuiManager.distributeID(), 0, 60, 200, 20, 128));
-                API.openGui(p, nwg);
+                nwg.objList.add(new NetWorkGuiCustomField("https://ss0.bdstatic.com/70cFuHSh_Q1YnxGkpoWK1HF6hhy/it/u=3871474308,1566042740&fm=26&gp=0.jpg",
+                        NetWorkGuiManager.distributeID(),
+                        0,
+                        20,
+                        200,
+                        20,
+                        0,
+                        0,
+                        200,
+                        20,
+                        128));
+                API.implantationGUI(p, nwg, GuiType.GuiInventory);
             }
         }
         return false;

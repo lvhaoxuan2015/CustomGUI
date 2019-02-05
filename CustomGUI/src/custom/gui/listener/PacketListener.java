@@ -6,6 +6,7 @@ import custom.gui.api.API;
 import custom.gui.event.CustomGuiButtonClickEvent;
 import custom.gui.event.CustomGuiCloseEvent;
 import custom.gui.event.CustomGuiOpenEvent;
+import custom.gui.event.ImplantationGuiButtonClickEvent;
 import java.util.HashMap;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.messaging.PluginMessageListener;
@@ -30,6 +31,8 @@ public class PacketListener implements PluginMessageListener {
             API.variablesMap.get(player.getName()).put(obj.get("ID").getAsString(), obj.get("Value").getAsString());
         } else if (method.equalsIgnoreCase("CLOSEGUI")) {
             Bukkit.getPluginManager().callEvent(new CustomGuiCloseEvent(obj.get("GuiID").getAsInt(), player));
+        } else if (method.equalsIgnoreCase("CLICKIMPLANTATIONGUIBUTTON")) {
+            Bukkit.getPluginManager().callEvent(new ImplantationGuiButtonClickEvent(obj.get("ButtonID").getAsInt(), obj.get("GuiType").getAsString(), player));
         }
     }
 

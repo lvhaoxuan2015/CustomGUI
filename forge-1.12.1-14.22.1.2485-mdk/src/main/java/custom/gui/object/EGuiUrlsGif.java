@@ -26,7 +26,7 @@ public class EGuiUrlsGif implements EGuiObject {
     }
 
     @Override
-    public void draw() {
+    public void draw(int mouseX, int mouseY, float partialTicks) {
         counter++;
         if (counter == speed) {
             frameNum++;

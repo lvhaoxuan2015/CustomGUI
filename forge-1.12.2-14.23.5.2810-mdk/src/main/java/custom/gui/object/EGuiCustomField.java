@@ -24,7 +24,7 @@ public class EGuiCustomField implements EGuiObject {
     }
 
     @Override
-    public void draw() {
+    public void draw(int mouseX, int mouseY, float partialTicks) {
         instance.x = x;
         instance.y = y;
         instance.width = width;

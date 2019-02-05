@@ -20,7 +20,7 @@ public class EGuiText implements EGuiObject {
     }
 
     @Override
-    public void draw() {
+    public void draw(int mouseX, int mouseY, float partialTicks) {
         Minecraft.getMinecraft().fontRenderer.drawString(str, x, y, color);
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
     }

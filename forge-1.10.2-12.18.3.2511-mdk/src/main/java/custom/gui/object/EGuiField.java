@@ -19,7 +19,7 @@ public class EGuiField implements EGuiObject {
     }
 
     @Override
-    public void draw() {
+    public void draw(int mouseX, int mouseY, float partialTicks) {
         instance.xPosition = x;
         instance.yPosition = y;
         instance.width = width;

@@ -29,7 +29,7 @@ public class GuiCustomButton extends GuiButton {
         this.textureHeight = textureHeight;
     }
 
-    public void drawButton(Minecraft mc, int mouseX, int mouseY, float partialTicks) {
+    public void drawButton(Minecraft mc, int mouseX, int mouseY) {
         if (this.visible) {
             this.hovered = mouseX >= this.x && mouseY >= this.y && mouseX < this.x + this.width && mouseY < this.y + this.height;
             FontRenderer fontrenderer = mc.fontRenderer;

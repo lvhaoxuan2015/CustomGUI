@@ -20,13 +20,13 @@ public class EGuiButton implements EGuiObject {
     }
 
     @Override
-    public void draw() {
+    public void draw(int mouseX, int mouseY, float partialTicks) {
         instance.x = x;
         instance.y = y;
         instance.displayString = str;
         instance.width = width;
         instance.height = height;
-        instance.drawButton(Minecraft.getMinecraft(), Minecraft.getMinecraft().mouseHelper.deltaX, Minecraft.getMinecraft().mouseHelper.deltaY, Minecraft.getMinecraft().getRenderPartialTicks());
+        instance.drawButton(Minecraft.getMinecraft(), mouseX, mouseY, Minecraft.getMinecraft().getRenderPartialTicks());
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
     }
 

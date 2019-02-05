@@ -25,7 +25,7 @@ public class EGuiImage implements EGuiObject {
     }
 
     @Override
-    public void draw() {
+    public void draw(int mouseX, int mouseY, float partialTicks) {
         if (!isuploadTextureImage) {
             textureID = GL11.glGenTextures();
             TextureUtil.uploadTextureImage(textureID, TextureManager.getBufferedImage(path));
